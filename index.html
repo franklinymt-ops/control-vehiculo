@@ -720,10 +720,10 @@
                         <label for="tipo-mantenimiento">Tipo de Mantenimiento</label>
                         <select id="tipo-mantenimiento">
                             <option value="cambio-aceite">Cambio de Aceite</option>
-                            <option value="cambio-filtros">Cambio de Filtros (Aire, Combustible, Aire Acondicionado)</option>
+                            <option value="cambio-filtros">Cambio de Filtros</option>
                             <option value="alineacion-balanceo">Alineación y Balanceo</option>
-                            <option value="revision-frenos">Revisión y Cambio de Frenos</option>
-                            <option value="cambio-correa">Cambio de Correa de Distribución</option>
+                            <option value="revision-frenos">Revisión de Frenos</option>
+                            <option value="cambio-correa">Cambio de Correa</option>
                             <option value="suspension">Revisión de Suspensión</option>
                             <option value="transmision">Revisión de Transmisión</option>
                             <option value="sistema-electrico">Revisión Sistema Eléctrico</option>
@@ -732,8 +732,8 @@
                             <option value="cambio-bateria">Cambio de Batería</option>
                             <option value="cambio-llantas">Cambio de Llantas</option>
                             <option value="rotacion-llantas">Rotación de Llantas</option>
-                            <option value="cambio-liquidos">Cambio de Líquidos (Frenos, Dirección, Refrigerante)</option>
-                            <option value="revision-motor">Revisión General del Motor</option>
+                            <option value="cambio-liquidos">Cambio de Líquidos</option>
+                            <option value="revision-motor">Revisión del Motor</option>
                             <option value="otros">Otros</option>
                         </select>
                     </div>
@@ -1083,7 +1083,9 @@
     </div>
 
     <script>
-        // Variables globales
+        // ============================================
+        // VARIABLES GLOBALES Y CONFIGURACIÓN INICIAL
+        // ============================================
         let datos = {
             pagos: [],
             tanqueos: [],
@@ -1121,157 +1123,112 @@
             indice: null
         };
 
-        // Configuración inicial
+        // ============================================
+        // INICIALIZACIÓN DEL SISTEMA
+        // ============================================
         document.addEventListener('DOMContentLoaded', function() {
-            // Mostrar fecha actual en el encabezado
-            actualizarFecha();
+            // Configurar fechas iniciales
+            configurarFechasIniciales();
             
-            // Establecer año actual en el footer
+            // Configurar año en footer
             document.getElementById('current-year').textContent = new Date().getFullYear();
             
-            // Cargar datos guardados
-            loadData();
+            // Cargar datos del localStorage
+            cargarDatos();
             
             // Configurar eventos de formularios
-            document.getElementById('pago-form').addEventListener('submit', registrarPago);
-            document.getElementById('tanqueo-form').addEventListener('submit', registrarTanqueo);
-            document.getElementById('preventivo-form').addEventListener('submit', registrarMantenimiento);
-            document.getElementById('documentos-form').addEventListener('submit', registrarDocumento);
-            document.getElementById('form-edicion').addEventListener('submit', guardarEdicion);
-            
-            // Configurar fecha actual en formularios
-            configurarFechasFormularios();
+            configurarEventos();
             
             // Inicializar pestañas
             mostrarTabConfig('config-vehiculo');
-            
-            // Cargar estadísticas iniciales
-            actualizarEstadisticasTanqueo();
         });
 
-        // Función para actualizar fecha en el encabezado
-        function actualizarFecha() {
+        function configurarFechasIniciales() {
             const now = new Date();
+            
+            // Fecha actual en encabezado
             const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
             document.getElementById('current-date').textContent = now.toLocaleDateString('es-ES', options);
-        }
-
-        // Configurar fechas en formularios
-        function configurarFechasFormularios() {
-            const now = new Date();
+            
+            // Configurar fechas en formularios
             const today = now.toISOString().split('T')[0];
             
-            // Formulario de pago - fecha de hoy
+            // Pago diario
             document.getElementById('fecha-pago').value = today;
             
-            // Formulario de tanqueo - fecha y hora actual
+            // Tanqueo
             const nowDatetime = new Date(now.getTime() - now.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
             document.getElementById('fecha-tanqueo').value = nowDatetime;
             
-            // Formulario de mantenimiento - fecha de hoy
+            // Mantenimiento
             document.getElementById('fecha-mantenimiento').value = today;
             
-            // Formulario de documentos - fecha de hoy para emisión, +1 año para vencimiento
+            // Documentos
             document.getElementById('fecha-emision').value = today;
             
             const nextYear = new Date(now);
             nextYear.setFullYear(nextYear.getFullYear() + 1);
             document.getElementById('vencimiento').value = nextYear.toISOString().split('T')[0];
             
-            // Próximo mantenimiento - +3 meses
+            // Próximo mantenimiento
             const nextMaintenance = new Date(now);
             nextMaintenance.setMonth(nextMaintenance.getMonth() + 3);
             document.getElementById('proximo-mantenimiento').value = nextMaintenance.toISOString().split('T')[0];
         }
 
-        // Cargar datos del localStorage
-        function loadData() {
-            const savedData = localStorage.getItem('vehiculoGEY253');
-            if (savedData) {
-                datos = JSON.parse(savedData);
-                actualizarInterfazConfiguracion();
-            }
-            
-            // Renderizar datos cargados
-            renderPagos();
-            renderTanqueos();
-            renderMantenimientos();
-            renderVencimientos();
-            updateStats();
-            actualizarEstadisticasTanqueo();
+        function configurarEventos() {
+            // Formularios principales
+            document.getElementById('pago-form').addEventListener('submit', registrarPago);
+            document.getElementById('tanqueo-form').addEventListener('submit', registrarTanqueo);
+            document.getElementById('preventivo-form').addEventListener('submit', registrarMantenimiento);
+            document.getElementById('documentos-form').addEventListener('submit', registrarDocumento);
+            document.getElementById('form-edicion').addEventListener('submit', guardarEdicion);
         }
 
-        // Guardar datos en localStorage
-        function saveData() {
-            localStorage.setItem('vehiculoGEY253', JSON.stringify(datos));
-        }
-
-        // Actualizar interfaz con datos de configuración
-        function actualizarInterfazConfiguracion() {
-            // Encabezado del vehículo
-            document.getElementById('vehiculo-marca').textContent = datos.configuracion.vehiculo.marca + " " + datos.configuracion.vehiculo.modelo;
-            document.getElementById('vehiculo-anio').textContent = datos.configuracion.vehiculo.anio;
-            document.getElementById('vehiculo-placa').textContent = datos.configuracion.vehiculo.placa;
-            document.getElementById('vehiculo-color').textContent = datos.configuracion.vehiculo.color;
-            document.getElementById('footer-placa').textContent = datos.configuracion.vehiculo.placa;
-            
-            // Título del sistema
-            document.getElementById('sistema-titulo').textContent = datos.configuracion.sistema.titulo;
-            
-            // Monto diario
-            document.getElementById('monto-diario-display').textContent = "$" + datos.configuracion.sistema.montoDiario.toLocaleString();
-            document.getElementById('monto-pago').value = datos.configuracion.sistema.montoDiario;
-            
-            // Formularios de configuración
-            document.getElementById('config-marca').value = datos.configuracion.vehiculo.marca;
-            document.getElementById('config-modelo').value = datos.configuracion.vehiculo.modelo;
-            document.getElementById('config-anio').value = datos.configuracion.vehiculo.anio;
-            document.getElementById('config-placa').value = datos.configuracion.vehiculo.placa;
-            document.getElementById('config-color').value = datos.configuracion.vehiculo.color;
-            document.getElementById('config-kilometraje').value = datos.configuracion.vehiculo.kilometraje;
-            
-            document.getElementById('config-monto-diario').value = datos.configuracion.sistema.montoDiario;
-            document.getElementById('config-dia-pago').value = datos.configuracion.sistema.diaPago;
-            document.getElementById('config-titulo-sistema').value = datos.configuracion.sistema.titulo;
-            
-            document.getElementById('config-sheet-id').value = datos.configuracion.googleSheets.sheetId;
-            document.getElementById('config-sheet-name').value = datos.configuracion.googleSheets.sheetName;
-            
-            document.getElementById('config-notif-vencimientos').checked = datos.configuracion.notificaciones.vencimientos;
-            document.getElementById('config-notif-mantenimiento').checked = datos.configuracion.notificaciones.mantenimiento;
-            document.getElementById('config-notif-pagos').checked = datos.configuracion.notificaciones.pagos;
-            document.getElementById('config-dias-alerta').value = datos.configuracion.notificaciones.diasAlerta;
-        }
-
-        // FUNCIONES PARA REGISTRAR DATOS
+        // ============================================
+        // FUNCIONES PRINCIPALES DE REGISTRO
+        // ============================================
         function registrarPago(e) {
             e.preventDefault();
+            console.log("Registrando pago...");
             
             const fecha = document.getElementById('fecha-pago').value;
             const monto = parseInt(document.getElementById('monto-pago').value);
             const metodo = document.getElementById('metodo-pago').value;
             const nota = document.getElementById('nota-pago').value;
             
-            datos.pagos.push({
-                fecha,
-                monto,
-                metodo,
-                nota,
+            // Crear objeto de pago
+            const nuevoPago = {
+                id: Date.now(),
+                fecha: fecha,
+                monto: monto,
+                metodo: metodo,
+                nota: nota || '',
                 estado: 'completado',
                 timestamp: new Date().toISOString()
-            });
+            };
             
-            saveData();
+            // Agregar a datos
+            datos.pagos.push(nuevoPago);
+            
+            // Guardar y actualizar
+            guardarDatos();
             renderPagos();
-            updateStats();
+            actualizarEstadisticas();
             
-            alert(`¡Pago de $${monto.toLocaleString()} registrado exitosamente!`);
+            // Mensaje de éxito
+            alert(`✅ Pago de $${monto.toLocaleString()} registrado exitosamente!`);
+            
+            // Resetear fecha
             document.getElementById('fecha-pago').value = new Date().toISOString().split('T')[0];
             document.getElementById('nota-pago').value = "";
+            
+            return false;
         }
 
         function registrarTanqueo(e) {
             e.preventDefault();
+            console.log("Registrando tanqueo...");
             
             const fecha = document.getElementById('fecha-tanqueo').value;
             const litros = parseFloat(document.getElementById('litros').value);
@@ -1280,36 +1237,53 @@
             const kmInicial = parseInt(document.getElementById('km-inicial').value);
             const kmFinal = parseInt(document.getElementById('km-final').value);
             
+            // Validaciones
+            if (kmFinal <= kmInicial) {
+                alert("❌ El kilometraje final debe ser mayor al inicial");
+                return false;
+            }
+            
             // Calcular consumo
             const kmRecorridos = kmFinal - kmInicial;
-            const consumo = kmRecorridos > 0 ? (kmRecorridos / litros).toFixed(2) : 0;
+            const consumo = litros > 0 ? (kmRecorridos / litros).toFixed(2) : 0;
             
-            datos.tanqueos.push({
-                fecha,
-                litros,
-                valor,
-                tipo,
-                kmInicial,
-                kmFinal,
-                kmRecorridos,
-                consumo,
+            // Crear objeto de tanqueo
+            const nuevoTanqueo = {
+                id: Date.now(),
+                fecha: fecha,
+                litros: litros,
+                valor: valor,
+                tipo: tipo,
+                kmInicial: kmInicial,
+                kmFinal: kmFinal,
+                kmRecorridos: kmRecorridos,
+                consumo: consumo,
                 timestamp: new Date().toISOString()
-            });
+            };
             
-            saveData();
+            // Agregar a datos
+            datos.tanqueos.push(nuevoTanqueo);
+            
+            // Guardar y actualizar
+            guardarDatos();
             renderTanqueos();
-            updateStats();
-            actualizarEstadisticasTanqueo();
+            actualizarEstadisticas();
             
-            alert(`¡Tanqueo de ${litros} litros registrado exitosamente!`);
+            // Mensaje de éxito
+            alert(`✅ Tanqueo de ${litros} litros registrado exitosamente!\nConsumo: ${consumo} km/L`);
+            
+            // Resetear formulario
             e.target.reset();
             const now = new Date();
             const nowDatetime = new Date(now.getTime() - now.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
             document.getElementById('fecha-tanqueo').value = nowDatetime;
+            
+            return false;
         }
 
         function registrarMantenimiento(e) {
             e.preventDefault();
+            console.log("Registrando mantenimiento...");
             
             const fecha = document.getElementById('fecha-mantenimiento').value;
             const tipo = document.getElementById('tipo-mantenimiento').value;
@@ -1319,34 +1293,45 @@
             const kilometraje = parseInt(document.getElementById('kilometraje-mantenimiento').value);
             const notas = document.getElementById('notas-mantenimiento').value;
             
-            datos.mantenimientos.push({
-                fecha,
-                tipo,
-                categoria,
-                costo,
-                proximo,
-                kilometraje,
-                notas,
+            // Crear objeto de mantenimiento
+            const nuevoMantenimiento = {
+                id: Date.now(),
+                fecha: fecha,
+                tipo: tipo,
+                categoria: categoria,
+                costo: costo,
+                proximo: proximo,
+                kilometraje: kilometraje,
+                notas: notas || '',
                 timestamp: new Date().toISOString()
-            });
+            };
+            
+            // Agregar a datos
+            datos.mantenimientos.push(nuevoMantenimiento);
             
             // Actualizar kilometraje del vehículo si es mayor
             if (kilometraje > datos.configuracion.vehiculo.kilometraje) {
                 datos.configuracion.vehiculo.kilometraje = kilometraje;
-                saveData();
-                actualizarInterfazConfiguracion();
             }
             
-            saveData();
+            // Guardar y actualizar
+            guardarDatos();
             renderMantenimientos();
+            actualizarInterfazConfiguracion();
             
-            alert(`¡Mantenimiento ${categoria === 'preventivo' ? 'preventivo' : 'correctivo'} registrado exitosamente!`);
+            // Mensaje de éxito
+            alert(`✅ Mantenimiento ${categoria} registrado exitosamente!`);
+            
+            // Resetear formulario
             e.target.reset();
-            configurarFechasFormularios();
+            configurarFechasIniciales();
+            
+            return false;
         }
 
         function registrarDocumento(e) {
             e.preventDefault();
+            console.log("Registrando documento...");
             
             const tipo = document.getElementById('tipo-documento').value;
             const fechaEmision = document.getElementById('fecha-emision').value;
@@ -1354,43 +1339,57 @@
             const costo = parseInt(document.getElementById('costo-documento').value);
             const numero = document.getElementById('numero-documento').value;
             
+            // Validar fechas
+            if (new Date(vencimiento) <= new Date(fechaEmision)) {
+                alert("❌ La fecha de vencimiento debe ser posterior a la fecha de emisión");
+                return false;
+            }
+            
+            // Crear objeto de documento
+            const nuevoDocumento = {
+                id: Date.now(),
+                tipo: tipo,
+                fechaEmision: fechaEmision,
+                vencimiento: vencimiento,
+                costo: costo,
+                numero: numero || '',
+                timestamp: new Date().toISOString()
+            };
+            
+            // Buscar si ya existe este tipo de documento
             const index = datos.documentos.findIndex(doc => doc.tipo === tipo);
             
             if (index !== -1) {
-                datos.documentos[index] = { 
-                    tipo, 
-                    fechaEmision, 
-                    vencimiento, 
-                    costo, 
-                    numero,
-                    timestamp: new Date().toISOString() 
-                };
+                // Actualizar documento existente
+                datos.documentos[index] = nuevoDocumento;
             } else {
-                datos.documentos.push({ 
-                    tipo, 
-                    fechaEmision, 
-                    vencimiento, 
-                    costo, 
-                    numero,
-                    timestamp: new Date().toISOString() 
-                });
+                // Agregar nuevo documento
+                datos.documentos.push(nuevoDocumento);
             }
             
-            saveData();
+            // Guardar y actualizar
+            guardarDatos();
             renderVencimientos();
             
-            alert(`¡Documento ${getDocumentName(tipo)} registrado exitosamente!`);
+            // Mensaje de éxito
+            alert(`✅ Documento ${getDocumentName(tipo)} registrado exitosamente!`);
+            
+            // Resetear formulario
             e.target.reset();
-            configurarFechasFormularios();
+            configurarFechasIniciales();
+            
+            return false;
         }
 
-        // FUNCIONES PARA EDITAR Y ELIMINAR
+        // ============================================
+        // FUNCIONES DE EDICIÓN Y ELIMINACIÓN
+        // ============================================
         function editarRegistro(tipo, index) {
             editando.tipo = tipo;
             editando.indice = index;
             
             let registro;
-            let titulo;
+            let titulo = '';
             let campos = '';
             
             switch(tipo) {
@@ -1412,7 +1411,10 @@
                                 <option value="efectivo" ${registro.metodo === 'efectivo' ? 'selected' : ''}>Efectivo</option>
                                 <option value="transferencia" ${registro.metodo === 'transferencia' ? 'selected' : ''}>Transferencia</option>
                                 <option value="tarjeta" ${registro.metodo === 'tarjeta' ? 'selected' : ''}>Tarjeta</option>
-                                <option value="nequi" ${registro.metodo === 'nequi' ? 'selected' : ''}>Nequi/Daviplata</option>
+                                <option value="nequi" ${registro.metodo === 'nequi' ? 'selected' : ''}>Nequi</option>
+                                <option value="daviplata" ${registro.metodo === 'daviplata' ? 'selected' : ''}>Daviplata</option>
+                                <option value="bancolombia" ${registro.metodo === 'bancolombia' ? 'selected' : ''}>Bancolombia</option>
+                                <option value="bancamia" ${registro.metodo === 'bancamia' ? 'selected' : ''}>Bancamía</option>
                             </select>
                         </div>
                         <div class="form-group">
@@ -1518,10 +1520,11 @@
                 case 'tanqueo':
                     registro = datos.tanqueos[index];
                     titulo = 'Editar Registro de Tanqueo';
+                    const fechaParaInput = registro.fecha.includes('T') ? registro.fecha : registro.fecha + 'T' + '12:00';
                     campos = `
                         <div class="form-group">
                             <label for="edit-fecha">Fecha y Hora</label>
-                            <input type="datetime-local" id="edit-fecha" value="${registro.fecha.replace(' ', 'T')}" required>
+                            <input type="datetime-local" id="edit-fecha" value="${fechaParaInput}" required>
                         </div>
                         <div class="form-group">
                             <label for="edit-litros">Litros</label>
@@ -1578,10 +1581,9 @@
                         renderTanqueos();
                         break;
                 }
-                saveData();
-                updateStats();
-                actualizarEstadisticasTanqueo();
-                alert('Registro eliminado exitosamente!');
+                guardarDatos();
+                actualizarEstadisticas();
+                alert('✅ Registro eliminado exitosamente!');
             }
         }
 
@@ -1598,6 +1600,7 @@
                         registro.monto = parseInt(document.getElementById('edit-monto').value);
                         registro.metodo = document.getElementById('edit-metodo').value;
                         registro.nota = document.getElementById('edit-nota').value;
+                        registro.timestamp = new Date().toISOString();
                         break;
                         
                     case 'mantenimiento':
@@ -1609,8 +1612,8 @@
                         registro.proximo = document.getElementById('edit-proximo').value;
                         registro.kilometraje = parseInt(document.getElementById('edit-kilometraje').value);
                         registro.notas = document.getElementById('edit-notas').value;
+                        registro.timestamp = new Date().toISOString();
                         
-                        // Actualizar kilometraje del vehículo si es mayor
                         if (registro.kilometraje > datos.configuracion.vehiculo.kilometraje) {
                             datos.configuracion.vehiculo.kilometraje = registro.kilometraje;
                         }
@@ -1623,6 +1626,7 @@
                         registro.vencimiento = document.getElementById('edit-vencimiento').value;
                         registro.costo = parseInt(document.getElementById('edit-costo').value);
                         registro.numero = document.getElementById('edit-numero').value;
+                        registro.timestamp = new Date().toISOString();
                         break;
                         
                     case 'tanqueo':
@@ -1632,23 +1636,20 @@
                         registro.valor = parseInt(document.getElementById('edit-valor').value);
                         registro.tipo = document.getElementById('edit-tipo').value;
                         registro.kmInicial = parseInt(document.getElementById('edit-km-inicial').value);
-                        registro.kmFinal = parseInt(document.getElementById('edit-km-final').value);
-                        
-                        // Recalcular consumo
+                        registro.kmFinal = parseInt(document.getElementById('edit-km-final').value;
                         registro.kmRecorridos = registro.kmFinal - registro.kmInicial;
-                        registro.consumo = registro.kmRecorridos > 0 ? (registro.kmRecorridos / registro.litros).toFixed(2) : 0;
+                        registro.consumo = registro.litros > 0 ? (registro.kmRecorridos / registro.litros).toFixed(2) : 0;
+                        registro.timestamp = new Date().toISOString();
                         break;
                 }
                 
-                registro.timestamp = new Date().toISOString();
-                
-                saveData();
+                guardarDatos();
                 actualizarInterfazConfiguracion();
                 
                 switch(editando.tipo) {
                     case 'pago':
                         renderPagos();
-                        updateStats();
+                        actualizarEstadisticas();
                         break;
                     case 'mantenimiento':
                         renderMantenimientos();
@@ -1663,8 +1664,10 @@
                 }
                 
                 cerrarModal();
-                alert('Cambios guardados exitosamente!');
+                alert('✅ Cambios guardados exitosamente!');
             }
+            
+            return false;
         }
 
         function cerrarModal() {
@@ -1673,10 +1676,23 @@
             editando.indice = null;
         }
 
-        // RENDERIZAR DATOS EN TABLAS
+        // ============================================
+        // FUNCIONES DE RENDERIZADO
+        // ============================================
         function renderPagos() {
             const tbody = document.getElementById('pagos-body');
             tbody.innerHTML = '';
+            
+            if (datos.pagos.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="6" style="text-align: center; color: var(--gray);">
+                            No hay pagos registrados
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
             
             const pagosOrdenados = [...datos.pagos].sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
             
@@ -1708,6 +1724,17 @@
         function renderTanqueos() {
             const tbody = document.getElementById('tanqueos-body');
             tbody.innerHTML = '';
+            
+            if (datos.tanqueos.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="8" style="text-align: center; color: var(--gray);">
+                            No hay registros de tanqueo
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
             
             const tanqueosOrdenados = [...datos.tanqueos].sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
             
@@ -1742,6 +1769,17 @@
             const tbody = document.getElementById('mantenimientos-body');
             tbody.innerHTML = '';
             
+            if (datos.mantenimientos.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="7" style="text-align: center; color: var(--gray);">
+                            No hay mantenimientos registrados
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+            
             const mantenimientosOrdenados = [...datos.mantenimientos].sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
             
             mantenimientosOrdenados.forEach((mant, index) => {
@@ -1773,6 +1811,17 @@
         function renderVencimientos() {
             const tbody = document.getElementById('vencimientos-body');
             tbody.innerHTML = '';
+            
+            if (datos.documentos.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="5" style="text-align: center; color: var(--gray);">
+                            No hay documentos registrados
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
             
             const documentosOrdenados = [...datos.documentos].sort((a, b) => new Date(a.vencimiento) - new Date(b.vencimiento));
             
@@ -1808,8 +1857,10 @@
             });
         }
 
-        // ACTUALIZAR ESTADÍSTICAS
-        function updateStats() {
+        // ============================================
+        // FUNCIONES DE ESTADÍSTICAS
+        // ============================================
+        function actualizarEstadisticas() {
             // Total pagado
             const totalPagado = datos.pagos.reduce((sum, pago) => sum + pago.monto, 0);
             document.getElementById('total-pagado').textContent = `$${totalPagado.toLocaleString()}`;
@@ -1818,7 +1869,7 @@
             const totalLitros = datos.tanqueos.reduce((sum, tanqueo) => sum + tanqueo.litros, 0);
             document.getElementById('total-tanqueo').textContent = `${totalLitros.toFixed(1)} L`;
             
-            // Kilometraje total (del último tanqueo)
+            // Kilometraje total
             let totalKm = datos.configuracion.vehiculo.kilometraje;
             if (datos.tanqueos.length > 0) {
                 const ultimoTanqueo = datos.tanqueos[datos.tanqueos.length - 1];
@@ -1830,7 +1881,6 @@
             document.getElementById('dias-pago').textContent = datos.pagos.length;
         }
 
-        // ESTADÍSTICAS DE TANQUEO
         function actualizarEstadisticasTanqueo() {
             if (datos.tanqueos.length === 0) {
                 document.getElementById('consumo-promedio').textContent = "0 km/L";
@@ -1876,12 +1926,23 @@
                 tanqueosFiltrados = tanqueosFiltrados.filter(t => t.tipo === tipo);
             }
             
-            // Ordenar por fecha (más reciente primero)
+            if (tanqueosFiltrados.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="8" style="text-align: center; color: var(--gray);">
+                            No hay registros con los filtros aplicados
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+            
+            // Ordenar por fecha
             tanqueosFiltrados.sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
             
             // Mostrar resultados
             tanqueosFiltrados.forEach((tanqueo, index) => {
-                const originalIndex = datos.tanqueos.findIndex(t => t.timestamp === tanqueo.timestamp);
+                const originalIndex = datos.tanqueos.findIndex(t => t.id === tanqueo.id);
                 
                 const row = document.createElement('tr');
                 row.innerHTML = `
@@ -1907,7 +1968,9 @@
             });
         }
 
+        // ============================================
         // FUNCIONES DE CONFIGURACIÓN
+        // ============================================
         function mostrarTab(tabId) {
             // Ocultar todas las pestañas
             document.querySelectorAll('.tab-content').forEach(tab => {
@@ -1940,7 +2003,7 @@
                 tab.classList.remove('active');
             });
             
-            // Activar la pestaña clickeada
+            // Activar la pestaña correcta
             const tabs = document.querySelectorAll('.tabs .tab');
             const index = tabId === 'config-vehiculo' ? 0 : tabId === 'config-sistema' ? 1 : 2;
             tabs[index].classList.add('active');
@@ -1954,11 +2017,11 @@
             datos.configuracion.vehiculo.color = document.getElementById('config-color').value;
             datos.configuracion.vehiculo.kilometraje = parseInt(document.getElementById('config-kilometraje').value);
             
-            saveData();
+            guardarDatos();
             actualizarInterfazConfiguracion();
-            updateStats();
+            actualizarEstadisticas();
             
-            alert('Configuración del vehículo guardada exitosamente!');
+            alert('✅ Configuración del vehículo guardada exitosamente!');
         }
 
         function guardarConfiguracionPagos() {
@@ -1966,10 +2029,10 @@
             datos.configuracion.sistema.diaPago = parseInt(document.getElementById('config-dia-pago').value);
             datos.configuracion.sistema.titulo = document.getElementById('config-titulo-sistema').value;
             
-            saveData();
+            guardarDatos();
             actualizarInterfazConfiguracion();
             
-            alert('Configuración de pagos guardada exitosamente!');
+            alert('✅ Configuración de pagos guardada exitosamente!');
         }
 
         function guardarConfiguracionNotificaciones() {
@@ -1978,28 +2041,91 @@
             datos.configuracion.notificaciones.pagos = document.getElementById('config-notif-pagos').checked;
             datos.configuracion.notificaciones.diasAlerta = parseInt(document.getElementById('config-dias-alerta').value);
             
-            saveData();
+            guardarDatos();
             
-            alert('Configuración de notificaciones guardada exitosamente!');
+            alert('✅ Configuración de notificaciones guardada exitosamente!');
         }
 
-        function probarConexionSheets() {
-            const sheetId = document.getElementById('config-sheet-id').value;
-            const sheetName = document.getElementById('config-sheet-name').value;
+        function actualizarInterfazConfiguracion() {
+            // Encabezado del vehículo
+            document.getElementById('vehiculo-marca').textContent = datos.configuracion.vehiculo.marca + " " + datos.configuracion.vehiculo.modelo;
+            document.getElementById('vehiculo-anio').textContent = datos.configuracion.vehiculo.anio;
+            document.getElementById('vehiculo-placa').textContent = datos.configuracion.vehiculo.placa;
+            document.getElementById('vehiculo-color').textContent = datos.configuracion.vehiculo.color;
+            document.getElementById('footer-placa').textContent = datos.configuracion.vehiculo.placa;
             
-            if (!sheetId) {
-                alert('Por favor, ingresa el ID de Google Sheet primero.');
-                return;
+            // Título del sistema
+            document.getElementById('sistema-titulo').textContent = datos.configuracion.sistema.titulo;
+            
+            // Monto diario
+            document.getElementById('monto-diario-display').textContent = "$" + datos.configuracion.sistema.montoDiario.toLocaleString();
+            document.getElementById('monto-pago').value = datos.configuracion.sistema.montoDiario;
+            
+            // Formularios de configuración
+            document.getElementById('config-marca').value = datos.configuracion.vehiculo.marca;
+            document.getElementById('config-modelo').value = datos.configuracion.vehiculo.modelo;
+            document.getElementById('config-anio').value = datos.configuracion.vehiculo.anio;
+            document.getElementById('config-placa').value = datos.configuracion.vehiculo.placa;
+            document.getElementById('config-color').value = datos.configuracion.vehiculo.color;
+            document.getElementById('config-kilometraje').value = datos.configuracion.vehiculo.kilometraje;
+            
+            document.getElementById('config-monto-diario').value = datos.configuracion.sistema.montoDiario;
+            document.getElementById('config-dia-pago').value = datos.configuracion.sistema.diaPago;
+            document.getElementById('config-titulo-sistema').value = datos.configuracion.sistema.titulo;
+            
+            document.getElementById('config-sheet-id').value = datos.configuracion.googleSheets.sheetId;
+            document.getElementById('config-sheet-name').value = datos.configuracion.googleSheets.sheetName;
+            
+            document.getElementById('config-notif-vencimientos').checked = datos.configuracion.notificaciones.vencimientos;
+            document.getElementById('config-notif-mantenimiento').checked = datos.configuracion.notificaciones.mantenimiento;
+            document.getElementById('config-notif-pagos').checked = datos.configuracion.notificaciones.pagos;
+            document.getElementById('config-dias-alerta').value = datos.configuracion.notificaciones.diasAlerta;
+        }
+
+        // ============================================
+        // FUNCIONES DE ALMACENAMIENTO
+        // ============================================
+        function cargarDatos() {
+            const savedData = localStorage.getItem('vehiculoGEY253');
+            if (savedData) {
+                try {
+                    datos = JSON.parse(savedData);
+                    console.log("Datos cargados exitosamente");
+                } catch (e) {
+                    console.error("Error al cargar datos:", e);
+                    datos = {
+                        pagos: [],
+                        tanqueos: [],
+                        mantenimientos: [],
+                        documentos: [],
+                        configuracion: datos.configuracion
+                    };
+                }
             }
             
-            datos.configuracion.googleSheets.sheetId = sheetId;
-            datos.configuracion.googleSheets.sheetName = sheetName;
-            saveData();
-            
-            alert('Configuración de Google Sheets guardada. Para sincronización automática, configura un script de Google Apps Script.');
+            // Renderizar datos
+            renderPagos();
+            renderTanqueos();
+            renderMantenimientos();
+            renderVencimientos();
+            actualizarEstadisticas();
+            actualizarEstadisticasTanqueo();
+            actualizarInterfazConfiguracion();
         }
 
+        function guardarDatos() {
+            try {
+                localStorage.setItem('vehiculoGEY253', JSON.stringify(datos));
+                console.log("Datos guardados exitosamente");
+            } catch (e) {
+                console.error("Error al guardar datos:", e);
+                alert("❌ Error al guardar los datos. El almacenamiento podría estar lleno.");
+            }
+        }
+
+        // ============================================
         // FUNCIONES DE BACKUP Y RESTAURACIÓN
+        // ============================================
         function descargarBackup() {
             const backup = {
                 pagos: document.getElementById('config-backup-pagos').checked ? datos.pagos : [],
@@ -2009,7 +2135,7 @@
                 configuracion: datos.configuracion,
                 fechaBackup: new Date().toISOString(),
                 notas: document.getElementById('config-backup-notes').value,
-                version: '1.2'
+                version: '2.0'
             };
             
             const blob = new Blob([JSON.stringify(backup, null, 2)], { type: 'application/json' });
@@ -2022,7 +2148,7 @@
             document.body.removeChild(a);
             URL.revokeObjectURL(url);
             
-            alert('Backup descargado exitosamente!');
+            alert('✅ Backup descargado exitosamente!');
         }
 
         function copiarBackupClipboard() {
@@ -2034,15 +2160,15 @@
                 configuracion: datos.configuracion,
                 fechaBackup: new Date().toISOString(),
                 notas: document.getElementById('config-backup-notes').value,
-                version: '1.2'
+                version: '2.0'
             };
             
             navigator.clipboard.writeText(JSON.stringify(backup, null, 2))
                 .then(() => {
-                    alert('Backup copiado al portapapeles!');
+                    alert('✅ Backup copiado al portapapeles!');
                 })
                 .catch(err => {
-                    alert('Error al copiar al portapapeles: ' + err);
+                    alert('❌ Error al copiar al portapapeles: ' + err);
                 });
         }
 
@@ -2051,7 +2177,7 @@
             const sobrescribir = document.getElementById('restaurar-sobrescribir').checked;
             
             if (!backupText) {
-                alert('Por favor, pega los datos del backup primero.');
+                alert('❌ Por favor, pega los datos del backup primero.');
                 return;
             }
             
@@ -2073,13 +2199,13 @@
                     if (datosRestaurados.configuracion) datos.configuracion = datosRestaurados.configuracion;
                 }
                 
-                saveData();
-                loadData();
+                guardarDatos();
+                cargarDatos();
                 document.getElementById('backup-text').value = '';
                 
-                alert('Datos restaurados exitosamente!');
+                alert('✅ Datos restaurados exitosamente!');
             } catch (e) {
-                alert('Error: Los datos del backup no son válidos. ' + e.message);
+                alert('❌ Error: Los datos del backup no son válidos. ' + e.message);
             }
         }
 
@@ -2093,72 +2219,18 @@
                         documentos: [],
                         configuracion: datos.configuracion
                     };
-                    saveData();
-                    loadData();
-                    alert('Todos los datos han sido eliminados.');
+                    guardarDatos();
+                    cargarDatos();
+                    alert('✅ Todos los datos han sido eliminados.');
                 } else {
                     alert('Cancelado. Los datos no han sido eliminados.');
                 }
             }
         }
 
-        // FUNCIONES DE EXPORTACIÓN
-        function exportarAPDF(tipo) {
-            alert(`Exportando ${tipo} a PDF...\n\nEsta función está en desarrollo. Por ahora usa la exportación a Excel.`);
-        }
-
-        function exportarAExcel(tipo) {
-            let datosExportar = [];
-            let nombreArchivo = '';
-            let headers = [];
-            let rows = [];
-            
-            switch(tipo) {
-                case 'pagos':
-                    datosExportar = datos.pagos;
-                    nombreArchivo = `pagos-${datos.configuracion.vehiculo.placa}`;
-                    headers = ['Fecha', 'Monto', 'Método', 'Nota', 'Estado'];
-                    datosExportar.forEach(pago => {
-                        rows.push([pago.fecha, pago.monto, pago.metodo, pago.nota || '', pago.estado]);
-                    });
-                    break;
-                    
-                case 'mantenimientos':
-                    datosExportar = datos.mantenimientos;
-                    nombreArchivo = `mantenimientos-${datos.configuracion.vehiculo.placa}`;
-                    headers = ['Fecha', 'Tipo', 'Categoría', 'Costo', 'Kilometraje', 'Próximo', 'Notas'];
-                    datosExportar.forEach(mant => {
-                        rows.push([mant.fecha, mant.tipo, mant.categoria, mant.costo, mant.kilometraje, mant.proximo, mant.notas || '']);
-                    });
-                    break;
-            }
-            
-            if (datosExportar.length === 0) {
-                alert('No hay datos para exportar.');
-                return;
-            }
-            
-            // Crear contenido CSV
-            let csv = headers.join(',') + '\n';
-            rows.forEach(row => {
-                csv += row.map(cell => `"${cell}"`).join(',') + '\n';
-            });
-            
-            // Descargar archivo
-            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `${nombreArchivo}-${new Date().toISOString().split('T')[0]}.csv`;
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            URL.revokeObjectURL(url);
-            
-            alert('Archivo CSV exportado exitosamente! Puedes abrirlo en Excel.');
-        }
-
+        // ============================================
         // FUNCIONES AUXILIARES
+        // ============================================
         function formatDate(dateString) {
             const date = new Date(dateString);
             return date.toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric' });
@@ -2183,7 +2255,6 @@
         }
 
         function getMaintenanceTypeShort(type) {
-            // Acortar nombres largos para la tabla
             const shortNames = {
                 'cambio-aceite': 'Cambio Aceite',
                 'cambio-filtros': 'Cambio Filtros',
@@ -2203,28 +2274,6 @@
                 'otros': 'Otros'
             };
             return shortNames[type] || type;
-        }
-
-        function getMaintenanceTypeName(type) {
-            const types = {
-                'cambio-aceite': 'Cambio de Aceite',
-                'cambio-filtros': 'Cambio de Filtros (Aire, Combustible, Aire Acondicionado)',
-                'alineacion-balanceo': 'Alineación y Balanceo',
-                'revision-frenos': 'Revisión y Cambio de Frenos',
-                'cambio-correa': 'Cambio de Correa de Distribución',
-                'suspension': 'Revisión de Suspensión',
-                'transmision': 'Revisión de Transmisión',
-                'sistema-electrico': 'Revisión Sistema Eléctrico',
-                'aire-acondicionado': 'Revisión Aire Acondicionado',
-                'cambio-bujias': 'Cambio de Bujías',
-                'cambio-bateria': 'Cambio de Batería',
-                'cambio-llantas': 'Cambio de Llantas',
-                'rotacion-llantas': 'Rotación de Llantas',
-                'cambio-liquidos': 'Cambio de Líquidos (Frenos, Dirección, Refrigerante)',
-                'revision-motor': 'Revisión General del Motor',
-                'otros': 'Otros'
-            };
-            return types[type] || type;
         }
 
         function getDocumentName(type) {
@@ -2264,6 +2313,77 @@
             const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
             
             return diffDays > 0 ? `${diffDays} días` : diffDays < 0 ? `${Math.abs(diffDays)} días vencido` : 'Hoy vence';
+        }
+
+        function exportarAPDF(tipo) {
+            alert(`⏳ Exportando ${tipo} a PDF...\n\nEsta función está en desarrollo. Por ahora usa la exportación a Excel.`);
+        }
+
+        function exportarAExcel(tipo) {
+            let datosExportar = [];
+            let nombreArchivo = '';
+            let headers = [];
+            let rows = [];
+            
+            switch(tipo) {
+                case 'pagos':
+                    datosExportar = datos.pagos;
+                    nombreArchivo = `pagos-${datos.configuracion.vehiculo.placa}`;
+                    headers = ['Fecha', 'Monto', 'Método', 'Nota', 'Estado'];
+                    datosExportar.forEach(pago => {
+                        rows.push([pago.fecha, pago.monto, pago.metodo, pago.nota || '', pago.estado]);
+                    });
+                    break;
+                    
+                case 'mantenimientos':
+                    datosExportar = datos.mantenimientos;
+                    nombreArchivo = `mantenimientos-${datos.configuracion.vehiculo.placa}`;
+                    headers = ['Fecha', 'Tipo', 'Categoría', 'Costo', 'Kilometraje', 'Próximo', 'Notas'];
+                    datosExportar.forEach(mant => {
+                        rows.push([mant.fecha, mant.tipo, mant.categoria, mant.costo, mant.kilometraje, mant.proximo, mant.notas || '']);
+                    });
+                    break;
+            }
+            
+            if (datosExportar.length === 0) {
+                alert('❌ No hay datos para exportar.');
+                return;
+            }
+            
+            // Crear contenido CSV
+            let csv = headers.join(',') + '\n';
+            rows.forEach(row => {
+                csv += row.map(cell => `"${cell}"`).join(',') + '\n';
+            });
+            
+            // Descargar archivo
+            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `${nombreArchivo}-${new Date().toISOString().split('T')[0]}.csv`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            
+            alert('✅ Archivo CSV exportado exitosamente! Puedes abrirlo en Excel.');
+        }
+
+        function probarConexionSheets() {
+            const sheetId = document.getElementById('config-sheet-id').value;
+            const sheetName = document.getElementById('config-sheet-name').value;
+            
+            if (!sheetId) {
+                alert('❌ Por favor, ingresa el ID de Google Sheet primero.');
+                return;
+            }
+            
+            datos.configuracion.googleSheets.sheetId = sheetId;
+            datos.configuracion.googleSheets.sheetName = sheetName;
+            guardarDatos();
+            
+            alert('✅ Configuración de Google Sheets guardada. Para sincronización automática, configura un script de Google Apps Script.');
         }
     </script>
 </body>
