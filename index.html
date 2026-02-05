@@ -119,7 +119,7 @@
             color: var(--dark);
         }
         
-        input, select {
+        input, select, textarea {
             width: 100%;
             padding: 12px 15px;
             border: 1px solid #ddd;
@@ -128,7 +128,7 @@
             transition: border 0.3s;
         }
         
-        input:focus, select:focus {
+        input:focus, select:focus, textarea:focus {
             border-color: var(--secondary);
             outline: none;
         }
@@ -144,7 +144,6 @@
             font-size: 1rem;
             font-weight: 600;
             transition: background-color 0.3s;
-            width: 100%;
         }
         
         .btn:hover {
@@ -157,6 +156,32 @@
         
         .btn-success:hover {
             background-color: #219653;
+        }
+        
+        .btn-warning {
+            background-color: var(--warning);
+        }
+        
+        .btn-warning:hover {
+            background-color: #e67e22;
+        }
+        
+        .btn-danger {
+            background-color: var(--danger);
+        }
+        
+        .btn-danger:hover {
+            background-color: #c0392b;
+        }
+        
+        .btn-sm {
+            padding: 8px 15px;
+            font-size: 0.9rem;
+        }
+        
+        .btn-group {
+            display: flex;
+            gap: 8px;
         }
         
         .stats {
@@ -204,6 +229,12 @@
             margin-bottom: 20px;
             display: flex;
             align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+        }
+        
+        .section-title .btn-group {
+            display: flex;
             gap: 10px;
         }
         
@@ -278,6 +309,64 @@
             background-color: #e8f4fc;
         }
         
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .modal-content {
+            background-color: white;
+            border-radius: 10px;
+            padding: 30px;
+            width: 90%;
+            max-width: 500px;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+        
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .modal-title {
+            color: var(--primary);
+            font-size: 1.5rem;
+        }
+        
+        .close-modal {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: var(--gray);
+        }
+        
+        .config-section {
+            margin-top: 30px;
+            padding: 20px;
+            background-color: #f8f9fa;
+            border-radius: 10px;
+        }
+        
+        .config-title {
+            color: var(--primary);
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
         @media (max-width: 992px) {
             .main-grid {
                 grid-template-columns: 1fr;
@@ -296,6 +385,15 @@
             .header-content {
                 flex-direction: column;
                 gap: 15px;
+            }
+            
+            .section-title {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            
+            .section-title .btn-group {
+                width: 100%;
             }
         }
     </style>
@@ -366,7 +464,7 @@
                     </div>
                     
                     <button type="submit" class="btn btn-success">
-                        <i class="fas fa-check-circle"></i> Registrar Pago de Hoy
+                        <i class="fas fa-check-circle"></i> Registrar Pago
                     </button>
                 </form>
             </div>
@@ -400,14 +498,24 @@
                     </div>
                     
                     <button type="submit" class="btn">
-                        <i class="fas fa-save"></i> Guardar Registro de Tanqueo
+                        <i class="fas fa-save"></i> Guardar Registro
                     </button>
                 </form>
             </div>
         </div>
         
         <div class="records-section">
-            <h2 class="section-title"><i class="fas fa-history"></i> Historial de Pagos</h2>
+            <div class="section-title">
+                <h2><i class="fas fa-history"></i> Historial de Pagos</h2>
+                <div class="btn-group">
+                    <button class="btn btn-warning btn-sm" onclick="exportarAPDF('pagos')">
+                        <i class="fas fa-file-pdf"></i> PDF
+                    </button>
+                    <button class="btn btn-success btn-sm" onclick="exportarAExcel('pagos')">
+                        <i class="fas fa-file-excel"></i> Excel
+                    </button>
+                </div>
+            </div>
             <table id="pagos-table">
                 <thead>
                     <tr>
@@ -415,6 +523,7 @@
                         <th>Monto</th>
                         <th>Método</th>
                         <th>Estado</th>
+                        <th>Acciones</th>
                     </tr>
                 </thead>
                 <tbody id="pagos-body">
@@ -451,6 +560,11 @@
                     <div class="form-group">
                         <label for="proximo-mantenimiento">Próximo Mantenimiento</label>
                         <input type="date" id="proximo-mantenimiento" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="notas-mantenimiento">Notas (opcional)</label>
+                        <textarea id="notas-mantenimiento" rows="3" placeholder="Detalles adicionales..."></textarea>
                     </div>
                     
                     <button type="submit" class="btn">
@@ -495,6 +609,7 @@
                                 <th>Documento</th>
                                 <th>Vencimiento</th>
                                 <th>Estado</th>
+                                <th>Acciones</th>
                             </tr>
                         </thead>
                         <tbody id="vencimientos-body">
@@ -506,7 +621,17 @@
         </div>
         
         <div class="records-section">
-            <h2 class="section-title"><i class="fas fa-list"></i> Historial de Mantenimientos</h2>
+            <div class="section-title">
+                <h2><i class="fas fa-list"></i> Historial de Mantenimientos</h2>
+                <div class="btn-group">
+                    <button class="btn btn-warning btn-sm" onclick="exportarAPDF('mantenimientos')">
+                        <i class="fas fa-file-pdf"></i> PDF
+                    </button>
+                    <button class="btn btn-success btn-sm" onclick="exportarAExcel('mantenimientos')">
+                        <i class="fas fa-file-excel"></i> Excel
+                    </button>
+                </div>
+            </div>
             <table id="mantenimientos-table">
                 <thead>
                     <tr>
@@ -514,12 +639,66 @@
                         <th>Tipo</th>
                         <th>Costo</th>
                         <th>Próximo</th>
+                        <th>Acciones</th>
                     </tr>
                 </thead>
                 <tbody id="mantenimientos-body">
                     <!-- Los mantenimientos se agregarán aquí dinámicamente -->
                 </tbody>
             </table>
+        </div>
+
+        <div class="records-section">
+            <div class="section-title">
+                <h2><i class="fas fa-sliders-h"></i> Configuración y Herramientas</h2>
+            </div>
+            
+            <div class="main-grid">
+                <div class="card">
+                    <h3 class="config-title"><i class="fas fa-cogs"></i> Configuración del Sistema</h3>
+                    <div class="form-group">
+                        <label for="placa-vehiculo">Placa del Vehículo</label>
+                        <input type="text" id="placa-vehiculo" value="GEY253" class="form-control">
+                    </div>
+                    <div class="form-group">
+                        <label for="monto-diario">Monto de Pago Diario</label>
+                        <input type="number" id="monto-diario" value="85000" class="form-control">
+                    </div>
+                    <button class="btn btn-success" onclick="guardarConfiguracion()">
+                        <i class="fas fa-save"></i> Guardar Configuración
+                    </button>
+                </div>
+                
+                <div class="card">
+                    <h3 class="config-title"><i class="fas fa-database"></i> Gestión de Datos</h3>
+                    <div class="btn-group" style="flex-direction: column; gap: 10px;">
+                        <button class="btn btn-warning" onclick="abrirModalBackup()">
+                            <i class="fas fa-file-export"></i> Respaldar Datos
+                        </button>
+                        <button class="btn btn-secondary" onclick="abrirModalRestaurar()">
+                            <i class="fas fa-file-import"></i> Restaurar Datos
+                        </button>
+                        <button class="btn btn-danger" onclick="confirmarLimpiarDatos()">
+                            <i class="fas fa-trash-alt"></i> Limpiar Todos los Datos
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="config-section">
+                <h3 class="config-title"><i class="fas fa-table"></i> Configuración Google Sheets</h3>
+                <p style="margin-bottom: 15px; color: var(--gray);">
+                    Conecta tu Google Sheets para respaldo automático de datos.
+                    <a href="#" onclick="mostrarInstruccionesSheets()" style="color: var(--secondary);">Ver instrucciones</a>
+                </p>
+                <div class="form-group">
+                    <label for="google-sheet-id">ID de Google Sheet (opcional)</label>
+                    <input type="text" id="google-sheet-id" placeholder="Ej: 1ABC123..." class="form-control">
+                </div>
+                <button class="btn btn-success" onclick="probarConexionSheets()">
+                    <i class="fas fa-sync-alt"></i> Probar Conexión
+                </button>
+            </div>
         </div>
         
         <div class="footer">
@@ -528,7 +707,87 @@
         </div>
     </div>
 
+    <!-- Modal para edición -->
+    <div class="modal" id="modal-edicion">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title" id="modal-titulo">Editar Registro</h3>
+                <button class="close-modal" onclick="cerrarModal()">&times;</button>
+            </div>
+            <form id="form-edicion">
+                <div id="modal-contenido">
+                    <!-- Contenido dinámico del modal -->
+                </div>
+                <div style="display: flex; gap: 10px; margin-top: 20px;">
+                    <button type="submit" class="btn btn-success" style="flex: 1;">
+                        <i class="fas fa-save"></i> Guardar Cambios
+                    </button>
+                    <button type="button" class="btn btn-danger" onclick="cerrarModal()" style="flex: 1;">
+                        <i class="fas fa-times"></i> Cancelar
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal para backup -->
+    <div class="modal" id="modal-backup">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Respaldar Datos</h3>
+                <button class="close-modal" onclick="cerrarModalBackup()">&times;</button>
+            </div>
+            <div class="form-group">
+                <label>Selecciona qué datos respaldar:</label>
+                <div style="margin-top: 10px;">
+                    <label style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px;">
+                        <input type="checkbox" id="backup-pagos" checked> Pagos diarios
+                    </label>
+                    <label style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px;">
+                        <input type="checkbox" id="backup-tanqueos" checked> Registros de tanqueo
+                    </label>
+                    <label style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px;">
+                        <input type="checkbox" id="backup-mantenimientos" checked> Mantenimientos
+                    </label>
+                    <label style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px;">
+                        <input type="checkbox" id="backup-documentos" checked> Documentos
+                    </label>
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="backup-notes">Notas del respaldo (opcional):</label>
+                <textarea id="backup-notes" rows="3" placeholder="Ej: Respaldo mensual octubre..."></textarea>
+            </div>
+            <div style="display: flex; gap: 10px; margin-top: 20px;">
+                <button class="btn btn-success" onclick="descargarBackup()" style="flex: 1;">
+                    <i class="fas fa-download"></i> Descargar Backup
+                </button>
+                <button class="btn btn-warning" onclick="copiarBackupClipboard()" style="flex: 1;">
+                    <i class="fas fa-copy"></i> Copiar al Portapapeles
+                </button>
+            </div>
+        </div>
+    </div>
+
     <script>
+        // Variables globales
+        let datos = {
+            pagos: [],
+            tanqueos: [],
+            mantenimientos: [],
+            documentos: [],
+            configuracion: {
+                placa: "GEY253",
+                montoDiario: 85000,
+                googleSheetId: ""
+            }
+        };
+
+        let editando = {
+            tipo: null,
+            indice: null
+        };
+
         // Configuración inicial
         document.addEventListener('DOMContentLoaded', function() {
             // Mostrar fecha actual
@@ -540,12 +799,14 @@
             const today = now.toISOString().split('T')[0];
             document.getElementById('fecha-pago').value = today;
             document.getElementById('fecha-mantenimiento').value = today;
+            document.getElementById('vencimiento').value = today;
+            document.getElementById('proximo-mantenimiento').value = today;
             
             // Establecer fecha y hora actual para tanqueo
             const nowDatetime = new Date(now.getTime() - now.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
             document.getElementById('fecha-tanqueo').value = nowDatetime;
             
-            // Cargar datos guardados del localStorage
+            // Cargar datos guardados
             loadData();
             
             // Configurar eventos de formularios
@@ -553,31 +814,12 @@
             document.getElementById('tanqueo-form').addEventListener('submit', registrarTanqueo);
             document.getElementById('preventivo-form').addEventListener('submit', registrarMantenimiento);
             document.getElementById('documentos-form').addEventListener('submit', registrarDocumento);
+            document.getElementById('form-edicion').addEventListener('submit', guardarEdicion);
             
-            // Inicializar estadísticas
-            updateStats();
+            // Cargar configuración
+            cargarConfiguracion();
         });
-        
-        // Datos de ejemplo para inicializar la aplicación
-        let datos = {
-            pagos: [
-                { fecha: '2023-10-01', monto: 85000, metodo: 'efectivo', estado: 'completado' },
-                { fecha: '2023-10-02', monto: 85000, metodo: 'transferencia', estado: 'completado' },
-                { fecha: '2023-10-03', monto: 85000, metodo: 'nequi', estado: 'completado' }
-            ],
-            tanqueos: [
-                { fecha: '2023-10-01 14:30', litros: 40, valor: 160000, kmInicial: 15000, kmFinal: 15280 }
-            ],
-            mantenimientos: [
-                { fecha: '2023-09-15', tipo: 'cambio-aceite', costo: 120000, proximo: '2023-12-15' },
-                { fecha: '2023-08-10', tipo: 'alineacion', costo: 80000, proximo: '2024-02-10' }
-            ],
-            documentos: [
-                { tipo: 'soat', vencimiento: '2024-01-15', costo: 450000 },
-                { tipo: 'tecnomecanica', vencimiento: '2024-03-20', costo: 180000 }
-            ]
-        };
-        
+
         // Cargar datos del localStorage
         function loadData() {
             const savedData = localStorage.getItem('vehiculoGEY253');
@@ -591,13 +833,38 @@
             renderVencimientos();
             updateStats();
         }
-        
+
         // Guardar datos en localStorage
         function saveData() {
             localStorage.setItem('vehiculoGEY253', JSON.stringify(datos));
         }
-        
-        // Registrar pago diario
+
+        // Cargar configuración
+        function cargarConfiguracion() {
+            const savedConfig = localStorage.getItem('configVehiculo');
+            if (savedConfig) {
+                datos.configuracion = JSON.parse(savedConfig);
+                document.getElementById('placa-vehiculo').value = datos.configuracion.placa;
+                document.getElementById('monto-diario').value = datos.configuracion.montoDiario;
+                document.getElementById('google-sheet-id').value = datos.configuracion.googleSheetId || '';
+                document.getElementById('monto-pago').value = datos.configuracion.montoDiario;
+            }
+        }
+
+        // Guardar configuración
+        function guardarConfiguracion() {
+            datos.configuracion.placa = document.getElementById('placa-vehiculo').value;
+            datos.configuracion.montoDiario = parseInt(document.getElementById('monto-diario').value);
+            datos.configuracion.googleSheetId = document.getElementById('google-sheet-id').value;
+            
+            localStorage.setItem('configVehiculo', JSON.stringify(datos.configuracion));
+            document.getElementById('placa').textContent = datos.configuracion.placa;
+            document.getElementById('monto-pago').value = datos.configuracion.montoDiario;
+            
+            alert('Configuración guardada exitosamente!');
+        }
+
+        // FUNCIONES PARA REGISTRAR DATOS
         function registrarPago(e) {
             e.preventDefault();
             
@@ -609,21 +876,19 @@
                 fecha,
                 monto,
                 metodo,
-                estado: 'completado'
+                estado: 'completado',
+                timestamp: new Date().toISOString()
             });
             
             saveData();
             renderPagos();
             updateStats();
+            sincronizarConGoogleSheets('pagos');
             
-            // Mostrar mensaje de éxito
             alert(`¡Pago de $${monto.toLocaleString()} registrado exitosamente!`);
-            
-            // Resetear formulario (excepto el monto que se mantiene en 85,000)
             document.getElementById('fecha-pago').value = new Date().toISOString().split('T')[0];
         }
-        
-        // Registrar tanqueo de gasolina
+
         function registrarTanqueo(e) {
             e.preventDefault();
             
@@ -638,23 +903,21 @@
                 litros,
                 valor,
                 kmInicial,
-                kmFinal
+                kmFinal,
+                timestamp: new Date().toISOString()
             });
             
             saveData();
             updateStats();
+            sincronizarConGoogleSheets('tanqueos');
             
-            // Mostrar mensaje de éxito
             alert(`¡Tanqueo de ${litros} litros registrado exitosamente!`);
-            
-            // Resetear formulario
             e.target.reset();
             const now = new Date();
             const nowDatetime = new Date(now.getTime() - now.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
             document.getElementById('fecha-tanqueo').value = nowDatetime;
         }
-        
-        // Registrar mantenimiento preventivo
+
         function registrarMantenimiento(e) {
             e.preventDefault();
             
@@ -662,26 +925,26 @@
             const tipo = document.getElementById('tipo-mantenimiento').value;
             const costo = parseInt(document.getElementById('costo-mantenimiento').value);
             const proximo = document.getElementById('proximo-mantenimiento').value;
+            const notas = document.getElementById('notas-mantenimiento').value;
             
             datos.mantenimientos.push({
                 fecha,
                 tipo,
                 costo,
-                proximo
+                proximo,
+                notas,
+                timestamp: new Date().toISOString()
             });
             
             saveData();
             renderMantenimientos();
+            sincronizarConGoogleSheets('mantenimientos');
             
-            // Mostrar mensaje de éxito
             alert(`¡Mantenimiento registrado exitosamente!`);
-            
-            // Resetear formulario
             e.target.reset();
             document.getElementById('fecha-mantenimiento').value = new Date().toISOString().split('T')[0];
         }
-        
-        // Registrar documento y vencimiento
+
         function registrarDocumento(e) {
             e.preventDefault();
             
@@ -689,36 +952,208 @@
             const vencimiento = document.getElementById('vencimiento').value;
             const costo = parseInt(document.getElementById('costo-documento').value);
             
-            // Buscar si ya existe un registro de este documento
             const index = datos.documentos.findIndex(doc => doc.tipo === tipo);
             
             if (index !== -1) {
-                // Actualizar documento existente
-                datos.documentos[index] = { tipo, vencimiento, costo };
+                datos.documentos[index] = { tipo, vencimiento, costo, timestamp: new Date().toISOString() };
             } else {
-                // Agregar nuevo documento
-                datos.documentos.push({ tipo, vencimiento, costo });
+                datos.documentos.push({ tipo, vencimiento, costo, timestamp: new Date().toISOString() });
             }
             
             saveData();
             renderVencimientos();
+            sincronizarConGoogleSheets('documentos');
             
-            // Mostrar mensaje de éxito
             alert(`¡Documento ${getDocumentName(tipo)} registrado exitosamente!`);
-            
-            // Resetear formulario
             e.target.reset();
         }
-        
-        // Renderizar lista de pagos
+
+        // FUNCIONES PARA EDITAR Y ELIMINAR
+        function editarRegistro(tipo, index) {
+            editando.tipo = tipo;
+            editando.indice = index;
+            
+            let registro;
+            let titulo;
+            let campos = '';
+            
+            switch(tipo) {
+                case 'pago':
+                    registro = datos.pagos[index];
+                    titulo = 'Editar Pago';
+                    campos = `
+                        <div class="form-group">
+                            <label for="edit-fecha">Fecha de Pago</label>
+                            <input type="date" id="edit-fecha" value="${registro.fecha}" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="edit-monto">Monto</label>
+                            <input type="number" id="edit-monto" value="${registro.monto}" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="edit-metodo">Método de Pago</label>
+                            <select id="edit-metodo">
+                                <option value="efectivo" ${registro.metodo === 'efectivo' ? 'selected' : ''}>Efectivo</option>
+                                <option value="transferencia" ${registro.metodo === 'transferencia' ? 'selected' : ''}>Transferencia</option>
+                                <option value="tarjeta" ${registro.metodo === 'tarjeta' ? 'selected' : ''}>Tarjeta</option>
+                                <option value="nequi" ${registro.metodo === 'nequi' ? 'selected' : ''}>Nequi/Daviplata</option>
+                            </select>
+                        </div>
+                    `;
+                    break;
+                    
+                case 'mantenimiento':
+                    registro = datos.mantenimientos[index];
+                    titulo = 'Editar Mantenimiento';
+                    campos = `
+                        <div class="form-group">
+                            <label for="edit-fecha">Fecha</label>
+                            <input type="date" id="edit-fecha" value="${registro.fecha}" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="edit-tipo">Tipo</label>
+                            <select id="edit-tipo">
+                                <option value="cambio-aceite" ${registro.tipo === 'cambio-aceite' ? 'selected' : ''}>Cambio de Aceite</option>
+                                <option value="filtros" ${registro.tipo === 'filtros' ? 'selected' : ''}>Cambio de Filtros</option>
+                                <option value="frenos" ${registro.tipo === 'frenos' ? 'selected' : ''}>Revisión de Frenos</option>
+                                <option value="alineacion" ${registro.tipo === 'alineacion' ? 'selected' : ''}>Alineación y Balanceo</option>
+                                <option value="otros" ${registro.tipo === 'otros' ? 'selected' : ''}>Otros</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="edit-costo">Costo</label>
+                            <input type="number" id="edit-costo" value="${registro.costo}" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="edit-proximo">Próximo Mantenimiento</label>
+                            <input type="date" id="edit-proximo" value="${registro.proximo}" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="edit-notas">Notas</label>
+                            <textarea id="edit-notas" rows="3">${registro.notas || ''}</textarea>
+                        </div>
+                    `;
+                    break;
+                    
+                case 'documento':
+                    registro = datos.documentos[index];
+                    titulo = 'Editar Documento';
+                    campos = `
+                        <div class="form-group">
+                            <label for="edit-tipo">Tipo de Documento</label>
+                            <select id="edit-tipo">
+                                <option value="soat" ${registro.tipo === 'soat' ? 'selected' : ''}>SOAT</option>
+                                <option value="tecnomecanica" ${registro.tipo === 'tecnomecanica' ? 'selected' : ''}>Tecnomecánica</option>
+                                <option value="seguro" ${registro.tipo === 'seguro' ? 'selected' : ''}>Seguro Contractual</option>
+                                <option value="tarjeta-operacion" ${registro.tipo === 'tarjeta-operacion' ? 'selected' : ''}>Tarjeta de Operación</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="edit-vencimiento">Vencimiento</label>
+                            <input type="date" id="edit-vencimiento" value="${registro.vencimiento}" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="edit-costo">Costo de Renovación</label>
+                            <input type="number" id="edit-costo" value="${registro.costo}" required>
+                        </div>
+                    `;
+                    break;
+            }
+            
+            document.getElementById('modal-titulo').textContent = titulo;
+            document.getElementById('modal-contenido').innerHTML = campos;
+            document.getElementById('modal-edicion').style.display = 'flex';
+        }
+
+        function eliminarRegistro(tipo, index) {
+            if (confirm('¿Estás seguro de eliminar este registro?')) {
+                switch(tipo) {
+                    case 'pago':
+                        datos.pagos.splice(index, 1);
+                        renderPagos();
+                        break;
+                    case 'mantenimiento':
+                        datos.mantenimientos.splice(index, 1);
+                        renderMantenimientos();
+                        break;
+                    case 'documento':
+                        datos.documentos.splice(index, 1);
+                        renderVencimientos();
+                        break;
+                }
+                saveData();
+                updateStats();
+                alert('Registro eliminado exitosamente!');
+            }
+        }
+
+        function guardarEdicion(e) {
+            e.preventDefault();
+            
+            if (editando.tipo && editando.indice !== null) {
+                let registro;
+                
+                switch(editando.tipo) {
+                    case 'pago':
+                        registro = datos.pagos[editando.indice];
+                        registro.fecha = document.getElementById('edit-fecha').value;
+                        registro.monto = parseInt(document.getElementById('edit-monto').value);
+                        registro.metodo = document.getElementById('edit-metodo').value;
+                        break;
+                        
+                    case 'mantenimiento':
+                        registro = datos.mantenimientos[editando.indice];
+                        registro.fecha = document.getElementById('edit-fecha').value;
+                        registro.tipo = document.getElementById('edit-tipo').value;
+                        registro.costo = parseInt(document.getElementById('edit-costo').value);
+                        registro.proximo = document.getElementById('edit-proximo').value;
+                        registro.notas = document.getElementById('edit-notas').value;
+                        break;
+                        
+                    case 'documento':
+                        registro = datos.documentos[editando.indice];
+                        registro.tipo = document.getElementById('edit-tipo').value;
+                        registro.vencimiento = document.getElementById('edit-vencimiento').value;
+                        registro.costo = parseInt(document.getElementById('edit-costo').value);
+                        break;
+                }
+                
+                registro.timestamp = new Date().toISOString();
+                
+                saveData();
+                
+                switch(editando.tipo) {
+                    case 'pago':
+                        renderPagos();
+                        updateStats();
+                        break;
+                    case 'mantenimiento':
+                        renderMantenimientos();
+                        break;
+                    case 'documento':
+                        renderVencimientos();
+                        break;
+                }
+                
+                cerrarModal();
+                alert('Cambios guardados exitosamente!');
+            }
+        }
+
+        function cerrarModal() {
+            document.getElementById('modal-edicion').style.display = 'none';
+            editando.tipo = null;
+            editando.indice = null;
+        }
+
+        // RENDERIZAR DATOS EN TABLAS
         function renderPagos() {
             const tbody = document.getElementById('pagos-body');
             tbody.innerHTML = '';
             
-            // Ordenar por fecha (más reciente primero)
             const pagosOrdenados = [...datos.pagos].sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
             
-            pagosOrdenados.forEach(pago => {
+            pagosOrdenados.forEach((pago, index) => {
                 const row = document.createElement('tr');
                 
                 row.innerHTML = `
@@ -726,21 +1161,29 @@
                     <td>$${pago.monto.toLocaleString()}</td>
                     <td>${getPaymentMethodName(pago.metodo)}</td>
                     <td><span class="badge badge-success">${pago.estado}</span></td>
+                    <td>
+                        <div class="btn-group">
+                            <button class="btn btn-warning btn-sm" onclick="editarRegistro('pago', ${index})">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button class="btn btn-danger btn-sm" onclick="eliminarRegistro('pago', ${index})">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </td>
                 `;
                 
                 tbody.appendChild(row);
             });
         }
-        
-        // Renderizar lista de mantenimientos
+
         function renderMantenimientos() {
             const tbody = document.getElementById('mantenimientos-body');
             tbody.innerHTML = '';
             
-            // Ordenar por fecha (más reciente primero)
             const mantenimientosOrdenados = [...datos.mantenimientos].sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
             
-            mantenimientosOrdenados.forEach(mant => {
+            mantenimientosOrdenados.forEach((mant, index) => {
                 const row = document.createElement('tr');
                 
                 row.innerHTML = `
@@ -748,18 +1191,27 @@
                     <td>${getMaintenanceTypeName(mant.tipo)}</td>
                     <td>$${mant.costo.toLocaleString()}</td>
                     <td>${formatDate(mant.proximo)}</td>
+                    <td>
+                        <div class="btn-group">
+                            <button class="btn btn-warning btn-sm" onclick="editarRegistro('mantenimiento', ${index})">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button class="btn btn-danger btn-sm" onclick="eliminarRegistro('mantenimiento', ${index})">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </td>
                 `;
                 
                 tbody.appendChild(row);
             });
         }
-        
-        // Renderizar lista de vencimientos
+
         function renderVencimientos() {
             const tbody = document.getElementById('vencimientos-body');
             tbody.innerHTML = '';
             
-            datos.documentos.forEach(doc => {
+            datos.documentos.forEach((doc, index) => {
                 const row = document.createElement('tr');
                 const estado = getDocumentStatus(doc.vencimiento);
                 
@@ -767,9 +1219,18 @@
                     <td>${getDocumentName(doc.tipo)}</td>
                     <td>${formatDate(doc.vencimiento)}</td>
                     <td><span class="badge ${estado.class}">${estado.text}</span></td>
+                    <td>
+                        <div class="btn-group">
+                            <button class="btn btn-warning btn-sm" onclick="editarRegistro('documento', ${index})">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button class="btn btn-danger btn-sm" onclick="eliminarRegistro('documento', ${index})">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </td>
                 `;
                 
-                // Resaltar si está próximo a vencer o vencido
                 if (estado.text === 'Por vencer') {
                     row.classList.add('due-soon');
                 } else if (estado.text === 'Vencido') {
@@ -779,8 +1240,8 @@
                 tbody.appendChild(row);
             });
         }
-        
-        // Actualizar estadísticas
+
+        // ACTUALIZAR ESTADÍSTICAS
         function updateStats() {
             // Total pagado
             const totalPagado = datos.pagos.reduce((sum, pago) => sum + pago.monto, 0);
@@ -790,24 +1251,202 @@
             const totalLitros = datos.tanqueos.reduce((sum, tanqueo) => sum + tanqueo.litros, 0);
             document.getElementById('total-tanqueo').textContent = `${totalLitros.toFixed(1)} L`;
             
-            // Kilometraje total (usando el último tanqueo)
+            // Kilometraje total
             let totalKm = 0;
             if (datos.tanqueos.length > 0) {
                 const ultimoTanqueo = datos.tanqueos[datos.tanqueos.length - 1];
-                totalKm = ultimoTanqueo.kmFinal - datos.tanqueos[0].kmInicial;
+                const primerTanqueo = datos.tanqueos[0];
+                totalKm = ultimoTanqueo.kmFinal - primerTanqueo.kmInicial;
             }
             document.getElementById('total-km').textContent = `${totalKm.toLocaleString()} km`;
             
             // Días de pago
             document.getElementById('dias-pago').textContent = datos.pagos.length;
         }
-        
-        // Funciones auxiliares
+
+        // FUNCIONES DE BACKUP Y RESTAURACIÓN
+        function abrirModalBackup() {
+            document.getElementById('modal-backup').style.display = 'flex';
+        }
+
+        function cerrarModalBackup() {
+            document.getElementById('modal-backup').style.display = 'none';
+        }
+
+        function abrirModalRestaurar() {
+            const backupData = prompt('Pega aquí los datos del backup:');
+            if (backupData) {
+                try {
+                    const datosRestaurados = JSON.parse(backupData);
+                    if (confirm('¿Estás seguro de restaurar estos datos? Se sobrescribirán los datos actuales.')) {
+                        datos = datosRestaurados;
+                        saveData();
+                        loadData();
+                        alert('Datos restaurados exitosamente!');
+                    }
+                } catch (e) {
+                    alert('Error: Los datos del backup no son válidos.');
+                }
+            }
+        }
+
+        function descargarBackup() {
+            const backup = {
+                pagos: document.getElementById('backup-pagos').checked ? datos.pagos : [],
+                tanqueos: document.getElementById('backup-tanqueos').checked ? datos.tanqueos : [],
+                mantenimientos: document.getElementById('backup-mantenimientos').checked ? datos.mantenimientos : [],
+                documentos: document.getElementById('backup-documentos').checked ? datos.documentos : [],
+                configuracion: datos.configuracion,
+                fechaBackup: new Date().toISOString(),
+                notas: document.getElementById('backup-notes').value
+            };
+            
+            const blob = new Blob([JSON.stringify(backup, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `backup-vehiculo-${new Date().toISOString().split('T')[0]}.json`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            
+            cerrarModalBackup();
+            alert('Backup descargado exitosamente!');
+        }
+
+        function copiarBackupClipboard() {
+            const backup = {
+                pagos: document.getElementById('backup-pagos').checked ? datos.pagos : [],
+                tanqueos: document.getElementById('backup-tanqueos').checked ? datos.tanqueos : [],
+                mantenimientos: document.getElementById('backup-mantenimientos').checked ? datos.mantenimientos : [],
+                documentos: document.getElementById('backup-documentos').checked ? datos.documentos : [],
+                configuracion: datos.configuracion,
+                fechaBackup: new Date().toISOString(),
+                notas: document.getElementById('backup-notes').value
+            };
+            
+            navigator.clipboard.writeText(JSON.stringify(backup, null, 2))
+                .then(() => {
+                    alert('Backup copiado al portapapeles!');
+                    cerrarModalBackup();
+                })
+                .catch(err => {
+                    alert('Error al copiar al portapapeles: ' + err);
+                });
+        }
+
+        function confirmarLimpiarDatos() {
+            if (confirm('¿ESTÁS SEGURO? Esto eliminará TODOS los datos del sistema. Esta acción no se puede deshacer.')) {
+                if (confirm('¿Realmente estás seguro? Presiona OK para confirmar.')) {
+                    datos = {
+                        pagos: [],
+                        tanqueos: [],
+                        mantenimientos: [],
+                        documentos: [],
+                        configuracion: datos.configuracion
+                    };
+                    saveData();
+                    loadData();
+                    alert('Todos los datos han sido eliminados.');
+                }
+            }
+        }
+
+        // FUNCIONES DE GOOGLE SHEETS
+        function mostrarInstruccionesSheets() {
+            alert(`PARA CONECTAR CON GOOGLE SHEETS:
+
+1. Crea una nueva hoja de cálculo en Google Sheets
+2. Compártela como "Cualquiera con el enlace puede editar"
+3. Copia el ID de la hoja de la URL
+   Ejemplo: https://docs.google.com/spreadsheets/d/1ABC123.../edit
+   El ID es: 1ABC123...
+4. Pega el ID en el campo de configuración
+5. Haz clic en "Probar Conexión"
+
+Nota: Esta función requiere configuración adicional con Google Apps Script.`);
+        }
+
+        function probarConexionSheets() {
+            const sheetId = document.getElementById('google-sheet-id').value;
+            if (!sheetId) {
+                alert('Por favor, ingresa el ID de Google Sheet primero.');
+                return;
+            }
+            
+            alert('Conexión configurada. Nota: Para sincronización automática, necesitas configurar un script de Google Apps Script.\n\nGuarda el ID y usa la opción "Exportar a Excel" para respaldos manuales.');
+            
+            datos.configuracion.googleSheetId = sheetId;
+            localStorage.setItem('configVehiculo', JSON.stringify(datos.configuracion));
+        }
+
+        function sincronizarConGoogleSheets(tipo) {
+            // Esta función es un placeholder para la sincronización real
+            // En una implementación real, aquí iría el código para enviar datos a Google Sheets
+            console.log(`Sincronizando ${tipo} con Google Sheets...`);
+        }
+
+        // FUNCIONES DE EXPORTACIÓN
+        function exportarAPDF(tipo) {
+            alert(`Exportando ${tipo} a PDF...\n\nEn una implementación completa, aquí se generaría un PDF.`);
+            // Para implementación real: usar biblioteca como jsPDF
+        }
+
+        function exportarAExcel(tipo) {
+            let datosExportar = [];
+            let nombreArchivo = '';
+            
+            switch(tipo) {
+                case 'pagos':
+                    datosExportar = datos.pagos;
+                    nombreArchivo = 'pagos-vehiculo';
+                    break;
+                case 'mantenimientos':
+                    datosExportar = datos.mantenimientos;
+                    nombreArchivo = 'mantenimientos-vehiculo';
+                    break;
+            }
+            
+            if (datosExportar.length === 0) {
+                alert('No hay datos para exportar.');
+                return;
+            }
+            
+            // Crear contenido CSV
+            let csv = '';
+            if (tipo === 'pagos') {
+                csv = 'Fecha,Monto,Método,Estado\n';
+                datosExportar.forEach(pago => {
+                    csv += `${pago.fecha},${pago.monto},${pago.metodo},${pago.estado}\n`;
+                });
+            } else if (tipo === 'mantenimientos') {
+                csv = 'Fecha,Tipo,Costo,Próximo,Notas\n';
+                datosExportar.forEach(mant => {
+                    csv += `${mant.fecha},${getMaintenanceTypeName(mant.tipo)},${mant.costo},${mant.proximo},"${mant.notas || ''}"\n`;
+                });
+            }
+            
+            // Descargar archivo
+            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `${nombreArchivo}-${new Date().toISOString().split('T')[0]}.csv`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            
+            alert('Archivo CSV exportado exitosamente! Puedes abrirlo en Excel.');
+        }
+
+        // FUNCIONES AUXILIARES
         function formatDate(dateString) {
             const date = new Date(dateString);
             return date.toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric' });
         }
-        
+
         function getPaymentMethodName(method) {
             const methods = {
                 'efectivo': 'Efectivo',
@@ -817,7 +1456,7 @@
             };
             return methods[method] || method;
         }
-        
+
         function getMaintenanceTypeName(type) {
             const types = {
                 'cambio-aceite': 'Cambio de Aceite',
@@ -828,7 +1467,7 @@
             };
             return types[type] || type;
         }
-        
+
         function getDocumentName(type) {
             const types = {
                 'soat': 'SOAT',
@@ -838,7 +1477,7 @@
             };
             return types[type] || type;
         }
-        
+
         function getDocumentStatus(expirationDate) {
             const today = new Date();
             const expiration = new Date(expirationDate);
