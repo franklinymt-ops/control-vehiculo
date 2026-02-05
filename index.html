@@ -39,7 +39,7 @@
         header {
             background: linear-gradient(135deg, var(--primary), var(--secondary));
             color: white;
-            padding: 25px 0;
+            padding: 20px 0;
             border-radius: 10px;
             margin-bottom: 30px;
             box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
@@ -62,17 +62,56 @@
             font-size: 2.5rem;
         }
         
-        .logo h1 {
-            font-size: 1.8rem;
+        .logo-text {
+            display: flex;
+            flex-direction: column;
         }
         
-        .placa {
-            background-color: rgba(255, 255, 255, 0.2);
-            padding: 10px 20px;
+        .logo h1 {
+            font-size: 1.8rem;
+            margin-bottom: 5px;
+        }
+        
+        .logo .sistema-titulo {
+            font-size: 0.9rem;
+            opacity: 0.9;
+            font-weight: normal;
+        }
+        
+        .vehiculo-info {
+            background-color: rgba(255, 255, 255, 0.15);
+            padding: 15px;
             border-radius: 8px;
-            font-size: 1.5rem;
+            text-align: center;
+            min-width: 250px;
+        }
+        
+        .vehiculo-marca {
+            font-size: 1.2rem;
             font-weight: bold;
-            letter-spacing: 2px;
+            margin-bottom: 5px;
+        }
+        
+        .vehiculo-detalles {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            font-size: 0.9rem;
+            margin-bottom: 5px;
+        }
+        
+        .vehiculo-placa {
+            background-color: rgba(255, 255, 255, 0.25);
+            padding: 5px 15px;
+            border-radius: 4px;
+            font-weight: bold;
+            letter-spacing: 1px;
+            font-size: 1.1rem;
+        }
+        
+        .fecha-actual {
+            font-size: 0.8rem;
+            opacity: 0.9;
         }
         
         .main-grid {
@@ -297,14 +336,6 @@
             font-size: 0.9rem;
         }
         
-        .date-display {
-            font-size: 1.1rem;
-            font-weight: 600;
-            color: var(--primary);
-            margin-top: 10px;
-            text-align: center;
-        }
-        
         .pago-diario {
             background-color: #e8f4fc;
         }
@@ -367,6 +398,37 @@
             gap: 10px;
         }
         
+        .tabs {
+            display: flex;
+            border-bottom: 2px solid var(--light);
+            margin-bottom: 20px;
+        }
+        
+        .tab {
+            padding: 10px 20px;
+            cursor: pointer;
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s;
+        }
+        
+        .tab:hover {
+            background-color: rgba(52, 152, 219, 0.1);
+        }
+        
+        .tab.active {
+            border-bottom-color: var(--secondary);
+            color: var(--secondary);
+            font-weight: 600;
+        }
+        
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
         @media (max-width: 992px) {
             .main-grid {
                 grid-template-columns: 1fr;
@@ -375,16 +437,16 @@
             .stats {
                 grid-template-columns: repeat(2, 1fr);
             }
+            
+            .header-content {
+                flex-direction: column;
+                gap: 20px;
+            }
         }
         
         @media (max-width: 576px) {
             .stats {
                 grid-template-columns: 1fr;
-            }
-            
-            .header-content {
-                flex-direction: column;
-                gap: 15px;
             }
             
             .section-title {
@@ -395,6 +457,11 @@
             .section-title .btn-group {
                 width: 100%;
             }
+            
+            .vehiculo-detalles {
+                flex-direction: column;
+                gap: 5px;
+            }
         }
     </style>
 </head>
@@ -404,12 +471,20 @@
             <div class="header-content">
                 <div class="logo">
                     <i class="fas fa-car"></i>
-                    <div>
-                        <h1>Sistema de Control Vehicular</h1>
-                        <div class="date-display" id="current-date"></div>
+                    <div class="logo-text">
+                        <h1 id="sistema-titulo">Sistema de Control Vehicular</h1>
+                        <div class="sistema-titulo">Gestión completa de pagos y mantenimientos</div>
                     </div>
                 </div>
-                <div class="placa">GEY253</div>
+                <div class="vehiculo-info">
+                    <div class="vehiculo-marca" id="vehiculo-marca">Toyota Hilux</div>
+                    <div class="vehiculo-detalles">
+                        <span id="vehiculo-anio">2022</span>
+                        <span class="vehiculo-placa" id="vehiculo-placa">GEY253</span>
+                        <span id="vehiculo-color">Blanco</span>
+                    </div>
+                    <div class="fecha-actual" id="current-date"></div>
+                </div>
             </div>
         </header>
         
@@ -449,7 +524,7 @@
                     </div>
                     
                     <div class="form-group">
-                        <label for="monto-pago">Monto a Pagar (Valor diario: $85,000)</label>
+                        <label for="monto-pago">Monto a Pagar (Valor diario: <span id="monto-diario-display">$85,000</span>)</label>
                         <input type="number" id="monto-pago" value="85000" min="0" required>
                     </div>
                     
@@ -460,7 +535,15 @@
                             <option value="transferencia">Transferencia</option>
                             <option value="tarjeta">Tarjeta</option>
                             <option value="nequi">Nequi/Daviplata</option>
+                            <option value="daviplata">Daviplata</option>
+                            <option value="bancolombia">Bancolombia</option>
+                            <option value="bancamia">Bancamía</option>
                         </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="nota-pago">Nota (opcional)</label>
+                        <input type="text" id="nota-pago" placeholder="Ej: Pago adelantado, parcial, etc.">
                     </div>
                     
                     <button type="submit" class="btn btn-success">
@@ -473,7 +556,7 @@
                 <h2 class="card-title"><i class="fas fa-gas-pump"></i> Registro de Tanqueo</h2>
                 <form id="tanqueo-form">
                     <div class="form-group">
-                        <label for="fecha-tanqueo">Fecha de Tanqueo</label>
+                        <label for="fecha-tanqueo">Fecha y Hora de Tanqueo</label>
                         <input type="datetime-local" id="fecha-tanqueo" required>
                     </div>
                     
@@ -488,12 +571,23 @@
                     </div>
                     
                     <div class="form-group">
+                        <label for="tipo-gasolina">Tipo de Gasolina</label>
+                        <select id="tipo-gasolina">
+                            <option value="corriente">Corriente</option>
+                            <option value="extra">Extra</option>
+                            <option value="premium">Premium</option>
+                            <option value="diesel">Diesel</option>
+                            <option value="acpm">ACPM</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
                         <label for="km-inicial">Kilometraje Inicial</label>
                         <input type="number" id="km-inicial" min="0" required>
                     </div>
                     
                     <div class="form-group">
-                        <label for="km-final">Kilometraje Final</label>
+                        <label for="km-final">Kilometraje Final (después del tanqueo)</label>
                         <input type="number" id="km-final" min="0" required>
                     </div>
                     
@@ -522,6 +616,7 @@
                         <th>Fecha</th>
                         <th>Monto</th>
                         <th>Método</th>
+                        <th>Nota</th>
                         <th>Estado</th>
                         <th>Acciones</th>
                     </tr>
@@ -532,9 +627,89 @@
             </table>
         </div>
         
+        <div class="records-section">
+            <div class="tabs">
+                <div class="tab active" onclick="mostrarTab('tab-tanqueos')">Registros de Tanqueo</div>
+                <div class="tab" onclick="mostrarTab('tab-estadisticas-tanqueo')">Estadísticas de Consumo</div>
+            </div>
+            
+            <div id="tab-tanqueos" class="tab-content active">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Fecha</th>
+                            <th>Litros</th>
+                            <th>Valor</th>
+                            <th>Tipo</th>
+                            <th>KM Inicial</th>
+                            <th>KM Final</th>
+                            <th>Consumo (km/L)</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tanqueos-body">
+                        <!-- Los tanqueos se agregarán aquí dinámicamente -->
+                    </tbody>
+                </table>
+            </div>
+            
+            <div id="tab-estadisticas-tanqueo" class="tab-content">
+                <div class="main-grid">
+                    <div class="card">
+                        <h3 class="card-title"><i class="fas fa-chart-line"></i> Estadísticas de Consumo</h3>
+                        <div class="form-group">
+                            <label>Consumo Promedio</label>
+                            <div class="stat-value" id="consumo-promedio">0 km/L</div>
+                        </div>
+                        <div class="form-group">
+                            <label>Costo por Kilómetro</label>
+                            <div class="stat-value" id="costo-km">$0</div>
+                        </div>
+                        <div class="form-group">
+                            <label>Total Gastado en Gasolina</label>
+                            <div class="stat-value" id="total-gasolina">$0</div>
+                        </div>
+                    </div>
+                    
+                    <div class="card">
+                        <h3 class="card-title"><i class="fas fa-filter"></i> Filtros</h3>
+                        <div class="form-group">
+                            <label for="filtro-mes">Filtrar por Mes</label>
+                            <select id="filtro-mes" onchange="filtrarTanqueos()">
+                                <option value="todos">Todos los meses</option>
+                                <option value="1">Enero</option>
+                                <option value="2">Febrero</option>
+                                <option value="3">Marzo</option>
+                                <option value="4">Abril</option>
+                                <option value="5">Mayo</option>
+                                <option value="6">Junio</option>
+                                <option value="7">Julio</option>
+                                <option value="8">Agosto</option>
+                                <option value="9">Septiembre</option>
+                                <option value="10">Octubre</option>
+                                <option value="11">Noviembre</option>
+                                <option value="12">Diciembre</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="filtro-tipo-gasolina">Filtrar por Tipo de Gasolina</label>
+                            <select id="filtro-tipo-gasolina" onchange="filtrarTanqueos()">
+                                <option value="todos">Todos los tipos</option>
+                                <option value="corriente">Corriente</option>
+                                <option value="extra">Extra</option>
+                                <option value="premium">Premium</option>
+                                <option value="diesel">Diesel</option>
+                                <option value="acpm">ACPM</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
         <div class="main-grid">
             <div class="card">
-                <h2 class="card-title"><i class="fas fa-tools"></i> Mantenimiento Preventivo</h2>
+                <h2 class="card-title"><i class="fas fa-tools"></i> Mantenimiento Preventivo/Correctivo</h2>
                 <form id="preventivo-form">
                     <div class="form-group">
                         <label for="fecha-mantenimiento">Fecha de Mantenimiento</label>
@@ -545,10 +720,30 @@
                         <label for="tipo-mantenimiento">Tipo de Mantenimiento</label>
                         <select id="tipo-mantenimiento">
                             <option value="cambio-aceite">Cambio de Aceite</option>
-                            <option value="filtros">Cambio de Filtros</option>
-                            <option value="frenos">Revisión de Frenos</option>
-                            <option value="alineacion">Alineación y Balanceo</option>
+                            <option value="cambio-filtros">Cambio de Filtros (Aire, Combustible, Aire Acondicionado)</option>
+                            <option value="alineacion-balanceo">Alineación y Balanceo</option>
+                            <option value="revision-frenos">Revisión y Cambio de Frenos</option>
+                            <option value="cambio-correa">Cambio de Correa de Distribución</option>
+                            <option value="suspension">Revisión de Suspensión</option>
+                            <option value="transmision">Revisión de Transmisión</option>
+                            <option value="sistema-electrico">Revisión Sistema Eléctrico</option>
+                            <option value="aire-acondicionado">Revisión Aire Acondicionado</option>
+                            <option value="cambio-bujias">Cambio de Bujías</option>
+                            <option value="cambio-bateria">Cambio de Batería</option>
+                            <option value="cambio-llantas">Cambio de Llantas</option>
+                            <option value="rotacion-llantas">Rotación de Llantas</option>
+                            <option value="cambio-liquidos">Cambio de Líquidos (Frenos, Dirección, Refrigerante)</option>
+                            <option value="revision-motor">Revisión General del Motor</option>
                             <option value="otros">Otros</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="categoria-mantenimiento">Categoría</label>
+                        <select id="categoria-mantenimiento">
+                            <option value="preventivo">Preventivo</option>
+                            <option value="correctivo">Correctivo</option>
+                            <option value="predictivo">Predictivo</option>
                         </select>
                     </div>
                     
@@ -558,13 +753,18 @@
                     </div>
                     
                     <div class="form-group">
-                        <label for="proximo-mantenimiento">Próximo Mantenimiento</label>
+                        <label for="proximo-mantenimiento">Próximo Mantenimiento (Fecha)</label>
                         <input type="date" id="proximo-mantenimiento" required>
                     </div>
                     
                     <div class="form-group">
-                        <label for="notas-mantenimiento">Notas (opcional)</label>
-                        <textarea id="notas-mantenimiento" rows="3" placeholder="Detalles adicionales..."></textarea>
+                        <label for="kilometraje-mantenimiento">Kilometraje Actual</label>
+                        <input type="number" id="kilometraje-mantenimiento" min="0" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="notas-mantenimiento">Notas y Detalles</label>
+                        <textarea id="notas-mantenimiento" rows="4" placeholder="Detalles del mantenimiento, repuestos cambiados, taller, etc."></textarea>
                     </div>
                     
                     <button type="submit" class="btn">
@@ -581,9 +781,19 @@
                         <select id="tipo-documento">
                             <option value="soat">SOAT</option>
                             <option value="tecnomecanica">Tecnomecánica</option>
-                            <option value="seguro">Seguro Contractual</option>
+                            <option value="seguro-contractual">Seguro Contractual</option>
+                            <option value="seguro-extracontractual">Seguro Extracontractual</option>
                             <option value="tarjeta-operacion">Tarjeta de Operación</option>
+                            <option value="licencia-transito">Licencia de Tránsito</option>
+                            <option value="revision-tecnomecanica">Revisión Tecnomecánica</option>
+                            <option value="impuesto-vehiculo">Impuesto Vehicular</option>
+                            <option value="otros-documentos">Otros Documentos</option>
                         </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="fecha-emision">Fecha de Emisión/Renovación</label>
+                        <input type="date" id="fecha-emision" required>
                     </div>
                     
                     <div class="form-group">
@@ -594,6 +804,11 @@
                     <div class="form-group">
                         <label for="costo-documento">Costo de Renovación</label>
                         <input type="number" id="costo-documento" min="0" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="numero-documento">Número de Documento (opcional)</label>
+                        <input type="text" id="numero-documento" placeholder="Número de póliza, certificado, etc.">
                     </div>
                     
                     <button type="submit" class="btn">
@@ -608,6 +823,7 @@
                             <tr>
                                 <th>Documento</th>
                                 <th>Vencimiento</th>
+                                <th>Días Restantes</th>
                                 <th>Estado</th>
                                 <th>Acciones</th>
                             </tr>
@@ -637,7 +853,9 @@
                     <tr>
                         <th>Fecha</th>
                         <th>Tipo</th>
+                        <th>Categoría</th>
                         <th>Costo</th>
+                        <th>KM</th>
                         <th>Próximo</th>
                         <th>Acciones</th>
                     </tr>
@@ -653,56 +871,190 @@
                 <h2><i class="fas fa-sliders-h"></i> Configuración y Herramientas</h2>
             </div>
             
-            <div class="main-grid">
-                <div class="card">
-                    <h3 class="config-title"><i class="fas fa-cogs"></i> Configuración del Sistema</h3>
-                    <div class="form-group">
-                        <label for="placa-vehiculo">Placa del Vehículo</label>
-                        <input type="text" id="placa-vehiculo" value="GEY253" class="form-control">
-                    </div>
-                    <div class="form-group">
-                        <label for="monto-diario">Monto de Pago Diario</label>
-                        <input type="number" id="monto-diario" value="85000" class="form-control">
-                    </div>
-                    <button class="btn btn-success" onclick="guardarConfiguracion()">
-                        <i class="fas fa-save"></i> Guardar Configuración
-                    </button>
-                </div>
-                
-                <div class="card">
-                    <h3 class="config-title"><i class="fas fa-database"></i> Gestión de Datos</h3>
-                    <div class="btn-group" style="flex-direction: column; gap: 10px;">
-                        <button class="btn btn-warning" onclick="abrirModalBackup()">
-                            <i class="fas fa-file-export"></i> Respaldar Datos
+            <div class="tabs">
+                <div class="tab active" onclick="mostrarTabConfig('config-vehiculo')">Vehículo</div>
+                <div class="tab" onclick="mostrarTabConfig('config-sistema')">Sistema</div>
+                <div class="tab" onclick="mostrarTabConfig('config-datos')">Gestión de Datos</div>
+            </div>
+            
+            <div id="config-vehiculo" class="tab-content active">
+                <div class="main-grid">
+                    <div class="card">
+                        <h3 class="config-title"><i class="fas fa-car"></i> Información del Vehículo</h3>
+                        <div class="form-group">
+                            <label for="config-marca">Marca</label>
+                            <input type="text" id="config-marca" value="Toyota" class="form-control">
+                        </div>
+                        <div class="form-group">
+                            <label for="config-modelo">Modelo</label>
+                            <input type="text" id="config-modelo" value="Hilux" class="form-control">
+                        </div>
+                        <div class="form-group">
+                            <label for="config-anio">Año</label>
+                            <input type="number" id="config-anio" value="2022" min="1900" max="2024" class="form-control">
+                        </div>
+                        <div class="form-group">
+                            <label for="config-placa">Placa</label>
+                            <input type="text" id="config-placa" value="GEY253" class="form-control">
+                        </div>
+                        <div class="form-group">
+                            <label for="config-color">Color</label>
+                            <input type="text" id="config-color" value="Blanco" class="form-control">
+                        </div>
+                        <div class="form-group">
+                            <label for="config-kilometraje">Kilometraje Actual</label>
+                            <input type="number" id="config-kilometraje" value="0" min="0" class="form-control">
+                        </div>
+                        <button class="btn btn-success" onclick="guardarConfiguracionVehiculo()">
+                            <i class="fas fa-save"></i> Guardar Configuración
                         </button>
-                        <button class="btn btn-secondary" onclick="abrirModalRestaurar()">
-                            <i class="fas fa-file-import"></i> Restaurar Datos
-                        </button>
-                        <button class="btn btn-danger" onclick="confirmarLimpiarDatos()">
-                            <i class="fas fa-trash-alt"></i> Limpiar Todos los Datos
+                    </div>
+                    
+                    <div class="card">
+                        <h3 class="config-title"><i class="fas fa-money-bill-wave"></i> Configuración de Pagos</h3>
+                        <div class="form-group">
+                            <label for="config-monto-diario">Monto de Pago Diario</label>
+                            <input type="number" id="config-monto-diario" value="85000" class="form-control">
+                        </div>
+                        <div class="form-group">
+                            <label for="config-dia-pago">Día de Pago (opcional)</label>
+                            <select id="config-dia-pago" class="form-control">
+                                <option value="0">Todos los días</option>
+                                <option value="1">Lunes</option>
+                                <option value="2">Martes</option>
+                                <option value="3">Miércoles</option>
+                                <option value="4">Jueves</option>
+                                <option value="5">Viernes</option>
+                                <option value="6">Sábado</option>
+                                <option value="7">Domingo</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="config-titulo-sistema">Título del Sistema</label>
+                            <input type="text" id="config-titulo-sistema" value="Sistema de Control Vehicular" class="form-control">
+                        </div>
+                        <button class="btn btn-success" onclick="guardarConfiguracionPagos()">
+                            <i class="fas fa-save"></i> Guardar Configuración
                         </button>
                     </div>
                 </div>
             </div>
             
-            <div class="config-section">
-                <h3 class="config-title"><i class="fas fa-table"></i> Configuración Google Sheets</h3>
-                <p style="margin-bottom: 15px; color: var(--gray);">
-                    Conecta tu Google Sheets para respaldo automático de datos.
-                    <a href="#" onclick="mostrarInstruccionesSheets()" style="color: var(--secondary);">Ver instrucciones</a>
-                </p>
-                <div class="form-group">
-                    <label for="google-sheet-id">ID de Google Sheet (opcional)</label>
-                    <input type="text" id="google-sheet-id" placeholder="Ej: 1ABC123..." class="form-control">
+            <div id="config-sistema" class="tab-content">
+                <div class="main-grid">
+                    <div class="card">
+                        <h3 class="config-title"><i class="fas fa-table"></i> Google Sheets Integration</h3>
+                        <p style="margin-bottom: 15px; color: var(--gray);">
+                            Conecta tu Google Sheets para respaldo automático de datos.
+                        </p>
+                        <div class="form-group">
+                            <label for="config-sheet-id">ID de Google Sheet</label>
+                            <input type="text" id="config-sheet-id" placeholder="Ej: 1ABC123..." class="form-control">
+                        </div>
+                        <div class="form-group">
+                            <label for="config-sheet-name">Nombre de la Hoja</label>
+                            <input type="text" id="config-sheet-name" value="Control_Vehiculo" class="form-control">
+                        </div>
+                        <button class="btn btn-success" onclick="probarConexionSheets()">
+                            <i class="fas fa-sync-alt"></i> Probar Conexión
+                        </button>
+                    </div>
+                    
+                    <div class="card">
+                        <h3 class="config-title"><i class="fas fa-bell"></i> Notificaciones y Recordatorios</h3>
+                        <div style="margin-bottom: 15px;">
+                            <label style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px;">
+                                <input type="checkbox" id="config-notif-vencimientos" checked> 
+                                Recordatorios de vencimientos
+                            </label>
+                            <label style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px;">
+                                <input type="checkbox" id="config-notif-mantenimiento" checked> 
+                                Recordatorios de mantenimiento
+                            </label>
+                            <label style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px;">
+                                <input type="checkbox" id="config-notif-pagos" checked> 
+                                Recordatorios de pagos diarios
+                            </label>
+                        </div>
+                        <div class="form-group">
+                            <label for="config-dias-alerta">Días de alerta previa</label>
+                            <input type="number" id="config-dias-alerta" value="7" min="1" max="30" class="form-control">
+                        </div>
+                        <button class="btn btn-success" onclick="guardarConfiguracionNotificaciones()">
+                            <i class="fas fa-save"></i> Guardar Configuración
+                        </button>
+                    </div>
                 </div>
-                <button class="btn btn-success" onclick="probarConexionSheets()">
-                    <i class="fas fa-sync-alt"></i> Probar Conexión
-                </button>
+            </div>
+            
+            <div id="config-datos" class="tab-content">
+                <div class="main-grid">
+                    <div class="card">
+                        <h3 class="config-title"><i class="fas fa-database"></i> Respaldar Datos</h3>
+                        <div class="form-group">
+                            <label>Selecciona qué datos respaldar:</label>
+                            <div style="margin-top: 10px;">
+                                <label style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px;">
+                                    <input type="checkbox" id="config-backup-pagos" checked> Pagos diarios
+                                </label>
+                                <label style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px;">
+                                    <input type="checkbox" id="config-backup-tanqueos" checked> Registros de tanqueo
+                                </label>
+                                <label style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px;">
+                                    <input type="checkbox" id="config-backup-mantenimientos" checked> Mantenimientos
+                                </label>
+                                <label style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px;">
+                                    <input type="checkbox" id="config-backup-documentos" checked> Documentos
+                                </label>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="config-backup-notes">Notas del respaldo:</label>
+                            <textarea id="config-backup-notes" rows="3" placeholder="Ej: Respaldo mensual..."></textarea>
+                        </div>
+                        <div style="display: flex; gap: 10px;">
+                            <button class="btn btn-success" onclick="descargarBackup()" style="flex: 1;">
+                                <i class="fas fa-download"></i> Descargar Backup
+                            </button>
+                            <button class="btn btn-warning" onclick="copiarBackupClipboard()" style="flex: 1;">
+                                <i class="fas fa-copy"></i> Copiar al Portapapeles
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="card">
+                        <h3 class="config-title"><i class="fas fa-file-import"></i> Restaurar Datos</h3>
+                        <div class="form-group">
+                            <label for="backup-text">Pega aquí los datos del backup:</label>
+                            <textarea id="backup-text" rows="8" placeholder="Pega el contenido del archivo de backup aquí..."></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px;">
+                                <input type="checkbox" id="restaurar-sobrescribir"> 
+                                Sobrescribir datos existentes
+                            </label>
+                            <small style="color: var(--danger);">¡Advertencia! Esto eliminará los datos actuales si están marcados para restaurar.</small>
+                        </div>
+                        <button class="btn btn-danger" onclick="restaurarBackup()">
+                            <i class="fas fa-file-import"></i> Restaurar desde Backup
+                        </button>
+                        
+                        <div style="margin-top: 25px;">
+                            <h4><i class="fas fa-trash-alt"></i> Limpieza de Datos</h4>
+                            <button class="btn btn-danger" onclick="confirmarLimpiarDatos()" style="margin-top: 10px; width: 100%;">
+                                <i class="fas fa-broom"></i> Limpiar TODOS los Datos
+                            </button>
+                            <small style="color: var(--danger); display: block; margin-top: 10px;">
+                                ¡ADVERTENCIA! Esta acción no se puede deshacer.
+                            </small>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
         
         <div class="footer">
-            <p>Sistema de Control Vehicular - Placa GEY253 &copy; 2023</p>
+            <p>Sistema de Control Vehicular - <span id="footer-placa">GEY253</span> &copy; <span id="current-year">2024</span></p>
             <p>Registra tus pagos diarios de $85,000 y mantenimientos del vehículo</p>
         </div>
     </div>
@@ -730,45 +1082,6 @@
         </div>
     </div>
 
-    <!-- Modal para backup -->
-    <div class="modal" id="modal-backup">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3 class="modal-title">Respaldar Datos</h3>
-                <button class="close-modal" onclick="cerrarModalBackup()">&times;</button>
-            </div>
-            <div class="form-group">
-                <label>Selecciona qué datos respaldar:</label>
-                <div style="margin-top: 10px;">
-                    <label style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px;">
-                        <input type="checkbox" id="backup-pagos" checked> Pagos diarios
-                    </label>
-                    <label style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px;">
-                        <input type="checkbox" id="backup-tanqueos" checked> Registros de tanqueo
-                    </label>
-                    <label style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px;">
-                        <input type="checkbox" id="backup-mantenimientos" checked> Mantenimientos
-                    </label>
-                    <label style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px;">
-                        <input type="checkbox" id="backup-documentos" checked> Documentos
-                    </label>
-                </div>
-            </div>
-            <div class="form-group">
-                <label for="backup-notes">Notas del respaldo (opcional):</label>
-                <textarea id="backup-notes" rows="3" placeholder="Ej: Respaldo mensual octubre..."></textarea>
-            </div>
-            <div style="display: flex; gap: 10px; margin-top: 20px;">
-                <button class="btn btn-success" onclick="descargarBackup()" style="flex: 1;">
-                    <i class="fas fa-download"></i> Descargar Backup
-                </button>
-                <button class="btn btn-warning" onclick="copiarBackupClipboard()" style="flex: 1;">
-                    <i class="fas fa-copy"></i> Copiar al Portapapeles
-                </button>
-            </div>
-        </div>
-    </div>
-
     <script>
         // Variables globales
         let datos = {
@@ -777,9 +1090,29 @@
             mantenimientos: [],
             documentos: [],
             configuracion: {
-                placa: "GEY253",
-                montoDiario: 85000,
-                googleSheetId: ""
+                vehiculo: {
+                    marca: "Toyota",
+                    modelo: "Hilux",
+                    anio: 2022,
+                    placa: "GEY253",
+                    color: "Blanco",
+                    kilometraje: 0
+                },
+                sistema: {
+                    titulo: "Sistema de Control Vehicular",
+                    montoDiario: 85000,
+                    diaPago: 0
+                },
+                notificaciones: {
+                    vencimientos: true,
+                    mantenimiento: true,
+                    pagos: true,
+                    diasAlerta: 7
+                },
+                googleSheets: {
+                    sheetId: "",
+                    sheetName: "Control_Vehiculo"
+                }
             }
         };
 
@@ -790,21 +1123,11 @@
 
         // Configuración inicial
         document.addEventListener('DOMContentLoaded', function() {
-            // Mostrar fecha actual
-            const now = new Date();
-            const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
-            document.getElementById('current-date').textContent = now.toLocaleDateString('es-ES', options);
+            // Mostrar fecha actual en el encabezado
+            actualizarFecha();
             
-            // Establecer fecha actual en los formularios
-            const today = now.toISOString().split('T')[0];
-            document.getElementById('fecha-pago').value = today;
-            document.getElementById('fecha-mantenimiento').value = today;
-            document.getElementById('vencimiento').value = today;
-            document.getElementById('proximo-mantenimiento').value = today;
-            
-            // Establecer fecha y hora actual para tanqueo
-            const nowDatetime = new Date(now.getTime() - now.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
-            document.getElementById('fecha-tanqueo').value = nowDatetime;
+            // Establecer año actual en el footer
+            document.getElementById('current-year').textContent = new Date().getFullYear();
             
             // Cargar datos guardados
             loadData();
@@ -816,22 +1139,66 @@
             document.getElementById('documentos-form').addEventListener('submit', registrarDocumento);
             document.getElementById('form-edicion').addEventListener('submit', guardarEdicion);
             
-            // Cargar configuración
-            cargarConfiguracion();
+            // Configurar fecha actual en formularios
+            configurarFechasFormularios();
+            
+            // Inicializar pestañas
+            mostrarTabConfig('config-vehiculo');
+            
+            // Cargar estadísticas iniciales
+            actualizarEstadisticasTanqueo();
         });
+
+        // Función para actualizar fecha en el encabezado
+        function actualizarFecha() {
+            const now = new Date();
+            const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+            document.getElementById('current-date').textContent = now.toLocaleDateString('es-ES', options);
+        }
+
+        // Configurar fechas en formularios
+        function configurarFechasFormularios() {
+            const now = new Date();
+            const today = now.toISOString().split('T')[0];
+            
+            // Formulario de pago - fecha de hoy
+            document.getElementById('fecha-pago').value = today;
+            
+            // Formulario de tanqueo - fecha y hora actual
+            const nowDatetime = new Date(now.getTime() - now.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
+            document.getElementById('fecha-tanqueo').value = nowDatetime;
+            
+            // Formulario de mantenimiento - fecha de hoy
+            document.getElementById('fecha-mantenimiento').value = today;
+            
+            // Formulario de documentos - fecha de hoy para emisión, +1 año para vencimiento
+            document.getElementById('fecha-emision').value = today;
+            
+            const nextYear = new Date(now);
+            nextYear.setFullYear(nextYear.getFullYear() + 1);
+            document.getElementById('vencimiento').value = nextYear.toISOString().split('T')[0];
+            
+            // Próximo mantenimiento - +3 meses
+            const nextMaintenance = new Date(now);
+            nextMaintenance.setMonth(nextMaintenance.getMonth() + 3);
+            document.getElementById('proximo-mantenimiento').value = nextMaintenance.toISOString().split('T')[0];
+        }
 
         // Cargar datos del localStorage
         function loadData() {
             const savedData = localStorage.getItem('vehiculoGEY253');
             if (savedData) {
                 datos = JSON.parse(savedData);
+                actualizarInterfazConfiguracion();
             }
             
             // Renderizar datos cargados
             renderPagos();
+            renderTanqueos();
             renderMantenimientos();
             renderVencimientos();
             updateStats();
+            actualizarEstadisticasTanqueo();
         }
 
         // Guardar datos en localStorage
@@ -839,29 +1206,41 @@
             localStorage.setItem('vehiculoGEY253', JSON.stringify(datos));
         }
 
-        // Cargar configuración
-        function cargarConfiguracion() {
-            const savedConfig = localStorage.getItem('configVehiculo');
-            if (savedConfig) {
-                datos.configuracion = JSON.parse(savedConfig);
-                document.getElementById('placa-vehiculo').value = datos.configuracion.placa;
-                document.getElementById('monto-diario').value = datos.configuracion.montoDiario;
-                document.getElementById('google-sheet-id').value = datos.configuracion.googleSheetId || '';
-                document.getElementById('monto-pago').value = datos.configuracion.montoDiario;
-            }
-        }
-
-        // Guardar configuración
-        function guardarConfiguracion() {
-            datos.configuracion.placa = document.getElementById('placa-vehiculo').value;
-            datos.configuracion.montoDiario = parseInt(document.getElementById('monto-diario').value);
-            datos.configuracion.googleSheetId = document.getElementById('google-sheet-id').value;
+        // Actualizar interfaz con datos de configuración
+        function actualizarInterfazConfiguracion() {
+            // Encabezado del vehículo
+            document.getElementById('vehiculo-marca').textContent = datos.configuracion.vehiculo.marca + " " + datos.configuracion.vehiculo.modelo;
+            document.getElementById('vehiculo-anio').textContent = datos.configuracion.vehiculo.anio;
+            document.getElementById('vehiculo-placa').textContent = datos.configuracion.vehiculo.placa;
+            document.getElementById('vehiculo-color').textContent = datos.configuracion.vehiculo.color;
+            document.getElementById('footer-placa').textContent = datos.configuracion.vehiculo.placa;
             
-            localStorage.setItem('configVehiculo', JSON.stringify(datos.configuracion));
-            document.getElementById('placa').textContent = datos.configuracion.placa;
-            document.getElementById('monto-pago').value = datos.configuracion.montoDiario;
+            // Título del sistema
+            document.getElementById('sistema-titulo').textContent = datos.configuracion.sistema.titulo;
             
-            alert('Configuración guardada exitosamente!');
+            // Monto diario
+            document.getElementById('monto-diario-display').textContent = "$" + datos.configuracion.sistema.montoDiario.toLocaleString();
+            document.getElementById('monto-pago').value = datos.configuracion.sistema.montoDiario;
+            
+            // Formularios de configuración
+            document.getElementById('config-marca').value = datos.configuracion.vehiculo.marca;
+            document.getElementById('config-modelo').value = datos.configuracion.vehiculo.modelo;
+            document.getElementById('config-anio').value = datos.configuracion.vehiculo.anio;
+            document.getElementById('config-placa').value = datos.configuracion.vehiculo.placa;
+            document.getElementById('config-color').value = datos.configuracion.vehiculo.color;
+            document.getElementById('config-kilometraje').value = datos.configuracion.vehiculo.kilometraje;
+            
+            document.getElementById('config-monto-diario').value = datos.configuracion.sistema.montoDiario;
+            document.getElementById('config-dia-pago').value = datos.configuracion.sistema.diaPago;
+            document.getElementById('config-titulo-sistema').value = datos.configuracion.sistema.titulo;
+            
+            document.getElementById('config-sheet-id').value = datos.configuracion.googleSheets.sheetId;
+            document.getElementById('config-sheet-name').value = datos.configuracion.googleSheets.sheetName;
+            
+            document.getElementById('config-notif-vencimientos').checked = datos.configuracion.notificaciones.vencimientos;
+            document.getElementById('config-notif-mantenimiento').checked = datos.configuracion.notificaciones.mantenimiento;
+            document.getElementById('config-notif-pagos').checked = datos.configuracion.notificaciones.pagos;
+            document.getElementById('config-dias-alerta').value = datos.configuracion.notificaciones.diasAlerta;
         }
 
         // FUNCIONES PARA REGISTRAR DATOS
@@ -871,11 +1250,13 @@
             const fecha = document.getElementById('fecha-pago').value;
             const monto = parseInt(document.getElementById('monto-pago').value);
             const metodo = document.getElementById('metodo-pago').value;
+            const nota = document.getElementById('nota-pago').value;
             
             datos.pagos.push({
                 fecha,
                 monto,
                 metodo,
+                nota,
                 estado: 'completado',
                 timestamp: new Date().toISOString()
             });
@@ -883,10 +1264,10 @@
             saveData();
             renderPagos();
             updateStats();
-            sincronizarConGoogleSheets('pagos');
             
             alert(`¡Pago de $${monto.toLocaleString()} registrado exitosamente!`);
             document.getElementById('fecha-pago').value = new Date().toISOString().split('T')[0];
+            document.getElementById('nota-pago').value = "";
         }
 
         function registrarTanqueo(e) {
@@ -895,21 +1276,30 @@
             const fecha = document.getElementById('fecha-tanqueo').value;
             const litros = parseFloat(document.getElementById('litros').value);
             const valor = parseInt(document.getElementById('valor-tanqueo').value);
+            const tipo = document.getElementById('tipo-gasolina').value;
             const kmInicial = parseInt(document.getElementById('km-inicial').value);
             const kmFinal = parseInt(document.getElementById('km-final').value);
+            
+            // Calcular consumo
+            const kmRecorridos = kmFinal - kmInicial;
+            const consumo = kmRecorridos > 0 ? (kmRecorridos / litros).toFixed(2) : 0;
             
             datos.tanqueos.push({
                 fecha,
                 litros,
                 valor,
+                tipo,
                 kmInicial,
                 kmFinal,
+                kmRecorridos,
+                consumo,
                 timestamp: new Date().toISOString()
             });
             
             saveData();
+            renderTanqueos();
             updateStats();
-            sincronizarConGoogleSheets('tanqueos');
+            actualizarEstadisticasTanqueo();
             
             alert(`¡Tanqueo de ${litros} litros registrado exitosamente!`);
             e.target.reset();
@@ -923,49 +1313,75 @@
             
             const fecha = document.getElementById('fecha-mantenimiento').value;
             const tipo = document.getElementById('tipo-mantenimiento').value;
+            const categoria = document.getElementById('categoria-mantenimiento').value;
             const costo = parseInt(document.getElementById('costo-mantenimiento').value);
             const proximo = document.getElementById('proximo-mantenimiento').value;
+            const kilometraje = parseInt(document.getElementById('kilometraje-mantenimiento').value);
             const notas = document.getElementById('notas-mantenimiento').value;
             
             datos.mantenimientos.push({
                 fecha,
                 tipo,
+                categoria,
                 costo,
                 proximo,
+                kilometraje,
                 notas,
                 timestamp: new Date().toISOString()
             });
             
+            // Actualizar kilometraje del vehículo si es mayor
+            if (kilometraje > datos.configuracion.vehiculo.kilometraje) {
+                datos.configuracion.vehiculo.kilometraje = kilometraje;
+                saveData();
+                actualizarInterfazConfiguracion();
+            }
+            
             saveData();
             renderMantenimientos();
-            sincronizarConGoogleSheets('mantenimientos');
             
-            alert(`¡Mantenimiento registrado exitosamente!`);
+            alert(`¡Mantenimiento ${categoria === 'preventivo' ? 'preventivo' : 'correctivo'} registrado exitosamente!`);
             e.target.reset();
-            document.getElementById('fecha-mantenimiento').value = new Date().toISOString().split('T')[0];
+            configurarFechasFormularios();
         }
 
         function registrarDocumento(e) {
             e.preventDefault();
             
             const tipo = document.getElementById('tipo-documento').value;
+            const fechaEmision = document.getElementById('fecha-emision').value;
             const vencimiento = document.getElementById('vencimiento').value;
             const costo = parseInt(document.getElementById('costo-documento').value);
+            const numero = document.getElementById('numero-documento').value;
             
             const index = datos.documentos.findIndex(doc => doc.tipo === tipo);
             
             if (index !== -1) {
-                datos.documentos[index] = { tipo, vencimiento, costo, timestamp: new Date().toISOString() };
+                datos.documentos[index] = { 
+                    tipo, 
+                    fechaEmision, 
+                    vencimiento, 
+                    costo, 
+                    numero,
+                    timestamp: new Date().toISOString() 
+                };
             } else {
-                datos.documentos.push({ tipo, vencimiento, costo, timestamp: new Date().toISOString() });
+                datos.documentos.push({ 
+                    tipo, 
+                    fechaEmision, 
+                    vencimiento, 
+                    costo, 
+                    numero,
+                    timestamp: new Date().toISOString() 
+                });
             }
             
             saveData();
             renderVencimientos();
-            sincronizarConGoogleSheets('documentos');
             
             alert(`¡Documento ${getDocumentName(tipo)} registrado exitosamente!`);
             e.target.reset();
+            configurarFechasFormularios();
         }
 
         // FUNCIONES PARA EDITAR Y ELIMINAR
@@ -999,6 +1415,10 @@
                                 <option value="nequi" ${registro.metodo === 'nequi' ? 'selected' : ''}>Nequi/Daviplata</option>
                             </select>
                         </div>
+                        <div class="form-group">
+                            <label for="edit-nota">Nota</label>
+                            <input type="text" id="edit-nota" value="${registro.nota || ''}">
+                        </div>
                     `;
                     break;
                     
@@ -1011,13 +1431,32 @@
                             <input type="date" id="edit-fecha" value="${registro.fecha}" required>
                         </div>
                         <div class="form-group">
-                            <label for="edit-tipo">Tipo</label>
+                            <label for="edit-tipo">Tipo de Mantenimiento</label>
                             <select id="edit-tipo">
                                 <option value="cambio-aceite" ${registro.tipo === 'cambio-aceite' ? 'selected' : ''}>Cambio de Aceite</option>
-                                <option value="filtros" ${registro.tipo === 'filtros' ? 'selected' : ''}>Cambio de Filtros</option>
-                                <option value="frenos" ${registro.tipo === 'frenos' ? 'selected' : ''}>Revisión de Frenos</option>
-                                <option value="alineacion" ${registro.tipo === 'alineacion' ? 'selected' : ''}>Alineación y Balanceo</option>
+                                <option value="cambio-filtros" ${registro.tipo === 'cambio-filtros' ? 'selected' : ''}>Cambio de Filtros</option>
+                                <option value="alineacion-balanceo" ${registro.tipo === 'alineacion-balanceo' ? 'selected' : ''}>Alineación y Balanceo</option>
+                                <option value="revision-frenos" ${registro.tipo === 'revision-frenos' ? 'selected' : ''}>Revisión de Frenos</option>
+                                <option value="cambio-correa" ${registro.tipo === 'cambio-correa' ? 'selected' : ''}>Cambio de Correa</option>
+                                <option value="suspension" ${registro.tipo === 'suspension' ? 'selected' : ''}>Suspensión</option>
+                                <option value="transmision" ${registro.tipo === 'transmision' ? 'selected' : ''}>Transmisión</option>
+                                <option value="sistema-electrico" ${registro.tipo === 'sistema-electrico' ? 'selected' : ''}>Sistema Eléctrico</option>
+                                <option value="aire-acondicionado" ${registro.tipo === 'aire-acondicionado' ? 'selected' : ''}>Aire Acondicionado</option>
+                                <option value="cambio-bujias" ${registro.tipo === 'cambio-bujias' ? 'selected' : ''}>Cambio de Bujías</option>
+                                <option value="cambio-bateria" ${registro.tipo === 'cambio-bateria' ? 'selected' : ''}>Cambio de Batería</option>
+                                <option value="cambio-llantas" ${registro.tipo === 'cambio-llantas' ? 'selected' : ''}>Cambio de Llantas</option>
+                                <option value="rotacion-llantas" ${registro.tipo === 'rotacion-llantas' ? 'selected' : ''}>Rotación de Llantas</option>
+                                <option value="cambio-liquidos" ${registro.tipo === 'cambio-liquidos' ? 'selected' : ''}>Cambio de Líquidos</option>
+                                <option value="revision-motor" ${registro.tipo === 'revision-motor' ? 'selected' : ''}>Revisión del Motor</option>
                                 <option value="otros" ${registro.tipo === 'otros' ? 'selected' : ''}>Otros</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="edit-categoria">Categoría</label>
+                            <select id="edit-categoria">
+                                <option value="preventivo" ${registro.categoria === 'preventivo' ? 'selected' : ''}>Preventivo</option>
+                                <option value="correctivo" ${registro.categoria === 'correctivo' ? 'selected' : ''}>Correctivo</option>
+                                <option value="predictivo" ${registro.categoria === 'predictivo' ? 'selected' : ''}>Predictivo</option>
                             </select>
                         </div>
                         <div class="form-group">
@@ -1029,8 +1468,12 @@
                             <input type="date" id="edit-proximo" value="${registro.proximo}" required>
                         </div>
                         <div class="form-group">
+                            <label for="edit-kilometraje">Kilometraje</label>
+                            <input type="number" id="edit-kilometraje" value="${registro.kilometraje}" required>
+                        </div>
+                        <div class="form-group">
                             <label for="edit-notas">Notas</label>
-                            <textarea id="edit-notas" rows="3">${registro.notas || ''}</textarea>
+                            <textarea id="edit-notas" rows="4">${registro.notas || ''}</textarea>
                         </div>
                     `;
                     break;
@@ -1044,17 +1487,67 @@
                             <select id="edit-tipo">
                                 <option value="soat" ${registro.tipo === 'soat' ? 'selected' : ''}>SOAT</option>
                                 <option value="tecnomecanica" ${registro.tipo === 'tecnomecanica' ? 'selected' : ''}>Tecnomecánica</option>
-                                <option value="seguro" ${registro.tipo === 'seguro' ? 'selected' : ''}>Seguro Contractual</option>
+                                <option value="seguro-contractual" ${registro.tipo === 'seguro-contractual' ? 'selected' : ''}>Seguro Contractual</option>
+                                <option value="seguro-extracontractual" ${registro.tipo === 'seguro-extracontractual' ? 'selected' : ''}>Seguro Extracontractual</option>
                                 <option value="tarjeta-operacion" ${registro.tipo === 'tarjeta-operacion' ? 'selected' : ''}>Tarjeta de Operación</option>
+                                <option value="licencia-transito" ${registro.tipo === 'licencia-transito' ? 'selected' : ''}>Licencia de Tránsito</option>
+                                <option value="revision-tecnomecanica" ${registro.tipo === 'revision-tecnomecanica' ? 'selected' : ''}>Revisión Tecnomecánica</option>
+                                <option value="impuesto-vehiculo" ${registro.tipo === 'impuesto-vehiculo' ? 'selected' : ''}>Impuesto Vehicular</option>
+                                <option value="otros-documentos" ${registro.tipo === 'otros-documentos' ? 'selected' : ''}>Otros Documentos</option>
                             </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="edit-fecha-emision">Fecha de Emisión</label>
+                            <input type="date" id="edit-fecha-emision" value="${registro.fechaEmision}" required>
                         </div>
                         <div class="form-group">
                             <label for="edit-vencimiento">Vencimiento</label>
                             <input type="date" id="edit-vencimiento" value="${registro.vencimiento}" required>
                         </div>
                         <div class="form-group">
-                            <label for="edit-costo">Costo de Renovación</label>
+                            <label for="edit-costo">Costo</label>
                             <input type="number" id="edit-costo" value="${registro.costo}" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="edit-numero">Número de Documento</label>
+                            <input type="text" id="edit-numero" value="${registro.numero || ''}">
+                        </div>
+                    `;
+                    break;
+                    
+                case 'tanqueo':
+                    registro = datos.tanqueos[index];
+                    titulo = 'Editar Registro de Tanqueo';
+                    campos = `
+                        <div class="form-group">
+                            <label for="edit-fecha">Fecha y Hora</label>
+                            <input type="datetime-local" id="edit-fecha" value="${registro.fecha.replace(' ', 'T')}" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="edit-litros">Litros</label>
+                            <input type="number" step="0.1" id="edit-litros" value="${registro.litros}" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="edit-valor">Valor</label>
+                            <input type="number" id="edit-valor" value="${registro.valor}" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="edit-tipo">Tipo de Gasolina</label>
+                            <select id="edit-tipo">
+                                <option value="corriente" ${registro.tipo === 'corriente' ? 'selected' : ''}>Corriente</option>
+                                <option value="extra" ${registro.tipo === 'extra' ? 'selected' : ''}>Extra</option>
+                                <option value="premium" ${registro.tipo === 'premium' ? 'selected' : ''}>Premium</option>
+                                <option value="diesel" ${registro.tipo === 'diesel' ? 'selected' : ''}>Diesel</option>
+                                <option value="acpm" ${registro.tipo === 'acpm' ? 'selected' : ''}>ACPM</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="edit-km-inicial">KM Inicial</label>
+                            <input type="number" id="edit-km-inicial" value="${registro.kmInicial}" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="edit-km-final">KM Final</label>
+                            <input type="number" id="edit-km-final" value="${registro.kmFinal}" required>
                         </div>
                     `;
                     break;
@@ -1080,9 +1573,14 @@
                         datos.documentos.splice(index, 1);
                         renderVencimientos();
                         break;
+                    case 'tanqueo':
+                        datos.tanqueos.splice(index, 1);
+                        renderTanqueos();
+                        break;
                 }
                 saveData();
                 updateStats();
+                actualizarEstadisticasTanqueo();
                 alert('Registro eliminado exitosamente!');
             }
         }
@@ -1099,28 +1597,53 @@
                         registro.fecha = document.getElementById('edit-fecha').value;
                         registro.monto = parseInt(document.getElementById('edit-monto').value);
                         registro.metodo = document.getElementById('edit-metodo').value;
+                        registro.nota = document.getElementById('edit-nota').value;
                         break;
                         
                     case 'mantenimiento':
                         registro = datos.mantenimientos[editando.indice];
                         registro.fecha = document.getElementById('edit-fecha').value;
                         registro.tipo = document.getElementById('edit-tipo').value;
+                        registro.categoria = document.getElementById('edit-categoria').value;
                         registro.costo = parseInt(document.getElementById('edit-costo').value);
                         registro.proximo = document.getElementById('edit-proximo').value;
+                        registro.kilometraje = parseInt(document.getElementById('edit-kilometraje').value);
                         registro.notas = document.getElementById('edit-notas').value;
+                        
+                        // Actualizar kilometraje del vehículo si es mayor
+                        if (registro.kilometraje > datos.configuracion.vehiculo.kilometraje) {
+                            datos.configuracion.vehiculo.kilometraje = registro.kilometraje;
+                        }
                         break;
                         
                     case 'documento':
                         registro = datos.documentos[editando.indice];
                         registro.tipo = document.getElementById('edit-tipo').value;
+                        registro.fechaEmision = document.getElementById('edit-fecha-emision').value;
                         registro.vencimiento = document.getElementById('edit-vencimiento').value;
                         registro.costo = parseInt(document.getElementById('edit-costo').value);
+                        registro.numero = document.getElementById('edit-numero').value;
+                        break;
+                        
+                    case 'tanqueo':
+                        registro = datos.tanqueos[editando.indice];
+                        registro.fecha = document.getElementById('edit-fecha').value;
+                        registro.litros = parseFloat(document.getElementById('edit-litros').value);
+                        registro.valor = parseInt(document.getElementById('edit-valor').value);
+                        registro.tipo = document.getElementById('edit-tipo').value;
+                        registro.kmInicial = parseInt(document.getElementById('edit-km-inicial').value);
+                        registro.kmFinal = parseInt(document.getElementById('edit-km-final').value);
+                        
+                        // Recalcular consumo
+                        registro.kmRecorridos = registro.kmFinal - registro.kmInicial;
+                        registro.consumo = registro.kmRecorridos > 0 ? (registro.kmRecorridos / registro.litros).toFixed(2) : 0;
                         break;
                 }
                 
                 registro.timestamp = new Date().toISOString();
                 
                 saveData();
+                actualizarInterfazConfiguracion();
                 
                 switch(editando.tipo) {
                     case 'pago':
@@ -1132,6 +1655,10 @@
                         break;
                     case 'documento':
                         renderVencimientos();
+                        break;
+                    case 'tanqueo':
+                        renderTanqueos();
+                        actualizarEstadisticasTanqueo();
                         break;
                 }
                 
@@ -1160,6 +1687,7 @@
                     <td>${formatDate(pago.fecha)}</td>
                     <td>$${pago.monto.toLocaleString()}</td>
                     <td>${getPaymentMethodName(pago.metodo)}</td>
+                    <td>${pago.nota || '-'}</td>
                     <td><span class="badge badge-success">${pago.estado}</span></td>
                     <td>
                         <div class="btn-group">
@@ -1167,6 +1695,39 @@
                                 <i class="fas fa-edit"></i>
                             </button>
                             <button class="btn btn-danger btn-sm" onclick="eliminarRegistro('pago', ${index})">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </td>
+                `;
+                
+                tbody.appendChild(row);
+            });
+        }
+
+        function renderTanqueos() {
+            const tbody = document.getElementById('tanqueos-body');
+            tbody.innerHTML = '';
+            
+            const tanqueosOrdenados = [...datos.tanqueos].sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
+            
+            tanqueosOrdenados.forEach((tanqueo, index) => {
+                const row = document.createElement('tr');
+                
+                row.innerHTML = `
+                    <td>${formatDateTime(tanqueo.fecha)}</td>
+                    <td>${tanqueo.litros} L</td>
+                    <td>$${tanqueo.valor.toLocaleString()}</td>
+                    <td>${tanqueo.tipo}</td>
+                    <td>${tanqueo.kmInicial.toLocaleString()}</td>
+                    <td>${tanqueo.kmFinal.toLocaleString()}</td>
+                    <td>${tanqueo.consumo} km/L</td>
+                    <td>
+                        <div class="btn-group">
+                            <button class="btn btn-warning btn-sm" onclick="editarRegistro('tanqueo', ${index})">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button class="btn btn-danger btn-sm" onclick="eliminarRegistro('tanqueo', ${index})">
                                 <i class="fas fa-trash"></i>
                             </button>
                         </div>
@@ -1188,8 +1749,10 @@
                 
                 row.innerHTML = `
                     <td>${formatDate(mant.fecha)}</td>
-                    <td>${getMaintenanceTypeName(mant.tipo)}</td>
+                    <td>${getMaintenanceTypeShort(mant.tipo)}</td>
+                    <td><span class="badge ${mant.categoria === 'preventivo' ? 'badge-success' : mant.categoria === 'correctivo' ? 'badge-warning' : 'badge-info'}">${mant.categoria}</span></td>
                     <td>$${mant.costo.toLocaleString()}</td>
+                    <td>${mant.kilometraje.toLocaleString()}</td>
                     <td>${formatDate(mant.proximo)}</td>
                     <td>
                         <div class="btn-group">
@@ -1211,13 +1774,17 @@
             const tbody = document.getElementById('vencimientos-body');
             tbody.innerHTML = '';
             
-            datos.documentos.forEach((doc, index) => {
+            const documentosOrdenados = [...datos.documentos].sort((a, b) => new Date(a.vencimiento) - new Date(b.vencimiento));
+            
+            documentosOrdenados.forEach((doc, index) => {
                 const row = document.createElement('tr');
                 const estado = getDocumentStatus(doc.vencimiento);
+                const diasRestantes = getDiasRestantes(doc.vencimiento);
                 
                 row.innerHTML = `
                     <td>${getDocumentName(doc.tipo)}</td>
                     <td>${formatDate(doc.vencimiento)}</td>
+                    <td>${diasRestantes}</td>
                     <td><span class="badge ${estado.class}">${estado.text}</span></td>
                     <td>
                         <div class="btn-group">
@@ -1251,12 +1818,11 @@
             const totalLitros = datos.tanqueos.reduce((sum, tanqueo) => sum + tanqueo.litros, 0);
             document.getElementById('total-tanqueo').textContent = `${totalLitros.toFixed(1)} L`;
             
-            // Kilometraje total
-            let totalKm = 0;
+            // Kilometraje total (del último tanqueo)
+            let totalKm = datos.configuracion.vehiculo.kilometraje;
             if (datos.tanqueos.length > 0) {
                 const ultimoTanqueo = datos.tanqueos[datos.tanqueos.length - 1];
-                const primerTanqueo = datos.tanqueos[0];
-                totalKm = ultimoTanqueo.kmFinal - primerTanqueo.kmInicial;
+                totalKm = Math.max(totalKm, ultimoTanqueo.kmFinal);
             }
             document.getElementById('total-km').textContent = `${totalKm.toLocaleString()} km`;
             
@@ -1264,81 +1830,262 @@
             document.getElementById('dias-pago').textContent = datos.pagos.length;
         }
 
-        // FUNCIONES DE BACKUP Y RESTAURACIÓN
-        function abrirModalBackup() {
-            document.getElementById('modal-backup').style.display = 'flex';
-        }
-
-        function cerrarModalBackup() {
-            document.getElementById('modal-backup').style.display = 'none';
-        }
-
-        function abrirModalRestaurar() {
-            const backupData = prompt('Pega aquí los datos del backup:');
-            if (backupData) {
-                try {
-                    const datosRestaurados = JSON.parse(backupData);
-                    if (confirm('¿Estás seguro de restaurar estos datos? Se sobrescribirán los datos actuales.')) {
-                        datos = datosRestaurados;
-                        saveData();
-                        loadData();
-                        alert('Datos restaurados exitosamente!');
-                    }
-                } catch (e) {
-                    alert('Error: Los datos del backup no son válidos.');
-                }
+        // ESTADÍSTICAS DE TANQUEO
+        function actualizarEstadisticasTanqueo() {
+            if (datos.tanqueos.length === 0) {
+                document.getElementById('consumo-promedio').textContent = "0 km/L";
+                document.getElementById('costo-km').textContent = "$0";
+                document.getElementById('total-gasolina').textContent = "$0";
+                return;
             }
+            
+            // Consumo promedio
+            const consumos = datos.tanqueos.filter(t => t.consumo > 0).map(t => parseFloat(t.consumo));
+            const consumoPromedio = consumos.length > 0 ? (consumos.reduce((a, b) => a + b, 0) / consumos.length).toFixed(2) : 0;
+            document.getElementById('consumo-promedio').textContent = `${consumoPromedio} km/L`;
+            
+            // Total gastado en gasolina
+            const totalGasolina = datos.tanqueos.reduce((sum, t) => sum + t.valor, 0);
+            document.getElementById('total-gasolina').textContent = `$${totalGasolina.toLocaleString()}`;
+            
+            // Costo por kilómetro
+            const totalKmRecorridos = datos.tanqueos.reduce((sum, t) => sum + t.kmRecorridos, 0);
+            const costoPorKm = totalKmRecorridos > 0 ? (totalGasolina / totalKmRecorridos).toFixed(2) : 0;
+            document.getElementById('costo-km').textContent = `$${costoPorKm}`;
         }
 
+        function filtrarTanqueos() {
+            const mes = document.getElementById('filtro-mes').value;
+            const tipo = document.getElementById('filtro-tipo-gasolina').value;
+            
+            const tbody = document.getElementById('tanqueos-body');
+            tbody.innerHTML = '';
+            
+            let tanqueosFiltrados = [...datos.tanqueos];
+            
+            // Filtrar por mes
+            if (mes !== 'todos') {
+                tanqueosFiltrados = tanqueosFiltrados.filter(t => {
+                    const fecha = new Date(t.fecha);
+                    return (fecha.getMonth() + 1) == parseInt(mes);
+                });
+            }
+            
+            // Filtrar por tipo de gasolina
+            if (tipo !== 'todos') {
+                tanqueosFiltrados = tanqueosFiltrados.filter(t => t.tipo === tipo);
+            }
+            
+            // Ordenar por fecha (más reciente primero)
+            tanqueosFiltrados.sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
+            
+            // Mostrar resultados
+            tanqueosFiltrados.forEach((tanqueo, index) => {
+                const originalIndex = datos.tanqueos.findIndex(t => t.timestamp === tanqueo.timestamp);
+                
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${formatDateTime(tanqueo.fecha)}</td>
+                    <td>${tanqueo.litros} L</td>
+                    <td>$${tanqueo.valor.toLocaleString()}</td>
+                    <td>${tanqueo.tipo}</td>
+                    <td>${tanqueo.kmInicial.toLocaleString()}</td>
+                    <td>${tanqueo.kmFinal.toLocaleString()}</td>
+                    <td>${tanqueo.consumo} km/L</td>
+                    <td>
+                        <div class="btn-group">
+                            <button class="btn btn-warning btn-sm" onclick="editarRegistro('tanqueo', ${originalIndex})">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button class="btn btn-danger btn-sm" onclick="eliminarRegistro('tanqueo', ${originalIndex})">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+
+        // FUNCIONES DE CONFIGURACIÓN
+        function mostrarTab(tabId) {
+            // Ocultar todas las pestañas
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            // Mostrar la pestaña seleccionada
+            document.getElementById(tabId).classList.add('active');
+            
+            // Actualizar estado de pestañas
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            // Activar la pestaña clickeada
+            event.target.classList.add('active');
+        }
+
+        function mostrarTabConfig(tabId) {
+            // Ocultar todas las pestañas de configuración
+            document.querySelectorAll('#config-vehiculo, #config-sistema, #config-datos').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            // Mostrar la pestaña seleccionada
+            document.getElementById(tabId).classList.add('active');
+            
+            // Actualizar estado de pestañas
+            document.querySelectorAll('.tabs .tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            // Activar la pestaña clickeada
+            const tabs = document.querySelectorAll('.tabs .tab');
+            const index = tabId === 'config-vehiculo' ? 0 : tabId === 'config-sistema' ? 1 : 2;
+            tabs[index].classList.add('active');
+        }
+
+        function guardarConfiguracionVehiculo() {
+            datos.configuracion.vehiculo.marca = document.getElementById('config-marca').value;
+            datos.configuracion.vehiculo.modelo = document.getElementById('config-modelo').value;
+            datos.configuracion.vehiculo.anio = parseInt(document.getElementById('config-anio').value);
+            datos.configuracion.vehiculo.placa = document.getElementById('config-placa').value;
+            datos.configuracion.vehiculo.color = document.getElementById('config-color').value;
+            datos.configuracion.vehiculo.kilometraje = parseInt(document.getElementById('config-kilometraje').value);
+            
+            saveData();
+            actualizarInterfazConfiguracion();
+            updateStats();
+            
+            alert('Configuración del vehículo guardada exitosamente!');
+        }
+
+        function guardarConfiguracionPagos() {
+            datos.configuracion.sistema.montoDiario = parseInt(document.getElementById('config-monto-diario').value);
+            datos.configuracion.sistema.diaPago = parseInt(document.getElementById('config-dia-pago').value);
+            datos.configuracion.sistema.titulo = document.getElementById('config-titulo-sistema').value;
+            
+            saveData();
+            actualizarInterfazConfiguracion();
+            
+            alert('Configuración de pagos guardada exitosamente!');
+        }
+
+        function guardarConfiguracionNotificaciones() {
+            datos.configuracion.notificaciones.vencimientos = document.getElementById('config-notif-vencimientos').checked;
+            datos.configuracion.notificaciones.mantenimiento = document.getElementById('config-notif-mantenimiento').checked;
+            datos.configuracion.notificaciones.pagos = document.getElementById('config-notif-pagos').checked;
+            datos.configuracion.notificaciones.diasAlerta = parseInt(document.getElementById('config-dias-alerta').value);
+            
+            saveData();
+            
+            alert('Configuración de notificaciones guardada exitosamente!');
+        }
+
+        function probarConexionSheets() {
+            const sheetId = document.getElementById('config-sheet-id').value;
+            const sheetName = document.getElementById('config-sheet-name').value;
+            
+            if (!sheetId) {
+                alert('Por favor, ingresa el ID de Google Sheet primero.');
+                return;
+            }
+            
+            datos.configuracion.googleSheets.sheetId = sheetId;
+            datos.configuracion.googleSheets.sheetName = sheetName;
+            saveData();
+            
+            alert('Configuración de Google Sheets guardada. Para sincronización automática, configura un script de Google Apps Script.');
+        }
+
+        // FUNCIONES DE BACKUP Y RESTAURACIÓN
         function descargarBackup() {
             const backup = {
-                pagos: document.getElementById('backup-pagos').checked ? datos.pagos : [],
-                tanqueos: document.getElementById('backup-tanqueos').checked ? datos.tanqueos : [],
-                mantenimientos: document.getElementById('backup-mantenimientos').checked ? datos.mantenimientos : [],
-                documentos: document.getElementById('backup-documentos').checked ? datos.documentos : [],
+                pagos: document.getElementById('config-backup-pagos').checked ? datos.pagos : [],
+                tanqueos: document.getElementById('config-backup-tanqueos').checked ? datos.tanqueos : [],
+                mantenimientos: document.getElementById('config-backup-mantenimientos').checked ? datos.mantenimientos : [],
+                documentos: document.getElementById('config-backup-documentos').checked ? datos.documentos : [],
                 configuracion: datos.configuracion,
                 fechaBackup: new Date().toISOString(),
-                notas: document.getElementById('backup-notes').value
+                notas: document.getElementById('config-backup-notes').value,
+                version: '1.2'
             };
             
             const blob = new Blob([JSON.stringify(backup, null, 2)], { type: 'application/json' });
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
-            a.download = `backup-vehiculo-${new Date().toISOString().split('T')[0]}.json`;
+            a.download = `backup-vehiculo-${datos.configuracion.vehiculo.placa}-${new Date().toISOString().split('T')[0]}.json`;
             document.body.appendChild(a);
             a.click();
             document.body.removeChild(a);
             URL.revokeObjectURL(url);
             
-            cerrarModalBackup();
             alert('Backup descargado exitosamente!');
         }
 
         function copiarBackupClipboard() {
             const backup = {
-                pagos: document.getElementById('backup-pagos').checked ? datos.pagos : [],
-                tanqueos: document.getElementById('backup-tanqueos').checked ? datos.tanqueos : [],
-                mantenimientos: document.getElementById('backup-mantenimientos').checked ? datos.mantenimientos : [],
-                documentos: document.getElementById('backup-documentos').checked ? datos.documentos : [],
+                pagos: document.getElementById('config-backup-pagos').checked ? datos.pagos : [],
+                tanqueos: document.getElementById('config-backup-tanqueos').checked ? datos.tanqueos : [],
+                mantenimientos: document.getElementById('config-backup-mantenimientos').checked ? datos.mantenimientos : [],
+                documentos: document.getElementById('config-backup-documentos').checked ? datos.documentos : [],
                 configuracion: datos.configuracion,
                 fechaBackup: new Date().toISOString(),
-                notas: document.getElementById('backup-notes').value
+                notas: document.getElementById('config-backup-notes').value,
+                version: '1.2'
             };
             
             navigator.clipboard.writeText(JSON.stringify(backup, null, 2))
                 .then(() => {
                     alert('Backup copiado al portapapeles!');
-                    cerrarModalBackup();
                 })
                 .catch(err => {
                     alert('Error al copiar al portapapeles: ' + err);
                 });
         }
 
+        function restaurarBackup() {
+            const backupText = document.getElementById('backup-text').value;
+            const sobrescribir = document.getElementById('restaurar-sobrescribir').checked;
+            
+            if (!backupText) {
+                alert('Por favor, pega los datos del backup primero.');
+                return;
+            }
+            
+            try {
+                const datosRestaurados = JSON.parse(backupText);
+                
+                if (!confirm(`¿Estás seguro de restaurar este backup?\nFecha: ${new Date(datosRestaurados.fechaBackup).toLocaleDateString()}\n${sobrescribir ? 'Se sobrescribirán los datos actuales.' : 'Se fusionarán con los datos actuales.'}`)) {
+                    return;
+                }
+                
+                if (sobrescribir) {
+                    datos = datosRestaurados;
+                } else {
+                    // Fusión de datos
+                    if (datosRestaurados.pagos) datos.pagos = [...datos.pagos, ...datosRestaurados.pagos];
+                    if (datosRestaurados.tanqueos) datos.tanqueos = [...datos.tanqueos, ...datosRestaurados.tanqueos];
+                    if (datosRestaurados.mantenimientos) datos.mantenimientos = [...datos.mantenimientos, ...datosRestaurados.mantenimientos];
+                    if (datosRestaurados.documentos) datos.documentos = [...datos.documentos, ...datosRestaurados.documentos];
+                    if (datosRestaurados.configuracion) datos.configuracion = datosRestaurados.configuracion;
+                }
+                
+                saveData();
+                loadData();
+                document.getElementById('backup-text').value = '';
+                
+                alert('Datos restaurados exitosamente!');
+            } catch (e) {
+                alert('Error: Los datos del backup no son válidos. ' + e.message);
+            }
+        }
+
         function confirmarLimpiarDatos() {
-            if (confirm('¿ESTÁS SEGURO? Esto eliminará TODOS los datos del sistema. Esta acción no se puede deshacer.')) {
-                if (confirm('¿Realmente estás seguro? Presiona OK para confirmar.')) {
+            if (confirm('¿ESTÁS ABSOLUTAMENTE SEGURO?\n\nEsta acción eliminará TODOS los datos del sistema:\n- Todos los pagos registrados\n- Todos los tanqueos\n- Todos los mantenimientos\n- Todos los documentos\n\n¡ESTA ACCIÓN NO SE PUEDE DESHACER!')) {
+                if (prompt('Para confirmar, escribe "ELIMINAR" (en mayúsculas):') === 'ELIMINAR') {
                     datos = {
                         pagos: [],
                         tanqueos: [],
@@ -1349,62 +2096,40 @@
                     saveData();
                     loadData();
                     alert('Todos los datos han sido eliminados.');
+                } else {
+                    alert('Cancelado. Los datos no han sido eliminados.');
                 }
             }
         }
 
-        // FUNCIONES DE GOOGLE SHEETS
-        function mostrarInstruccionesSheets() {
-            alert(`PARA CONECTAR CON GOOGLE SHEETS:
-
-1. Crea una nueva hoja de cálculo en Google Sheets
-2. Compártela como "Cualquiera con el enlace puede editar"
-3. Copia el ID de la hoja de la URL
-   Ejemplo: https://docs.google.com/spreadsheets/d/1ABC123.../edit
-   El ID es: 1ABC123...
-4. Pega el ID en el campo de configuración
-5. Haz clic en "Probar Conexión"
-
-Nota: Esta función requiere configuración adicional con Google Apps Script.`);
-        }
-
-        function probarConexionSheets() {
-            const sheetId = document.getElementById('google-sheet-id').value;
-            if (!sheetId) {
-                alert('Por favor, ingresa el ID de Google Sheet primero.');
-                return;
-            }
-            
-            alert('Conexión configurada. Nota: Para sincronización automática, necesitas configurar un script de Google Apps Script.\n\nGuarda el ID y usa la opción "Exportar a Excel" para respaldos manuales.');
-            
-            datos.configuracion.googleSheetId = sheetId;
-            localStorage.setItem('configVehiculo', JSON.stringify(datos.configuracion));
-        }
-
-        function sincronizarConGoogleSheets(tipo) {
-            // Esta función es un placeholder para la sincronización real
-            // En una implementación real, aquí iría el código para enviar datos a Google Sheets
-            console.log(`Sincronizando ${tipo} con Google Sheets...`);
-        }
-
         // FUNCIONES DE EXPORTACIÓN
         function exportarAPDF(tipo) {
-            alert(`Exportando ${tipo} a PDF...\n\nEn una implementación completa, aquí se generaría un PDF.`);
-            // Para implementación real: usar biblioteca como jsPDF
+            alert(`Exportando ${tipo} a PDF...\n\nEsta función está en desarrollo. Por ahora usa la exportación a Excel.`);
         }
 
         function exportarAExcel(tipo) {
             let datosExportar = [];
             let nombreArchivo = '';
+            let headers = [];
+            let rows = [];
             
             switch(tipo) {
                 case 'pagos':
                     datosExportar = datos.pagos;
-                    nombreArchivo = 'pagos-vehiculo';
+                    nombreArchivo = `pagos-${datos.configuracion.vehiculo.placa}`;
+                    headers = ['Fecha', 'Monto', 'Método', 'Nota', 'Estado'];
+                    datosExportar.forEach(pago => {
+                        rows.push([pago.fecha, pago.monto, pago.metodo, pago.nota || '', pago.estado]);
+                    });
                     break;
+                    
                 case 'mantenimientos':
                     datosExportar = datos.mantenimientos;
-                    nombreArchivo = 'mantenimientos-vehiculo';
+                    nombreArchivo = `mantenimientos-${datos.configuracion.vehiculo.placa}`;
+                    headers = ['Fecha', 'Tipo', 'Categoría', 'Costo', 'Kilometraje', 'Próximo', 'Notas'];
+                    datosExportar.forEach(mant => {
+                        rows.push([mant.fecha, mant.tipo, mant.categoria, mant.costo, mant.kilometraje, mant.proximo, mant.notas || '']);
+                    });
                     break;
             }
             
@@ -1414,18 +2139,10 @@ Nota: Esta función requiere configuración adicional con Google Apps Script.`);
             }
             
             // Crear contenido CSV
-            let csv = '';
-            if (tipo === 'pagos') {
-                csv = 'Fecha,Monto,Método,Estado\n';
-                datosExportar.forEach(pago => {
-                    csv += `${pago.fecha},${pago.monto},${pago.metodo},${pago.estado}\n`;
-                });
-            } else if (tipo === 'mantenimientos') {
-                csv = 'Fecha,Tipo,Costo,Próximo,Notas\n';
-                datosExportar.forEach(mant => {
-                    csv += `${mant.fecha},${getMaintenanceTypeName(mant.tipo)},${mant.costo},${mant.proximo},"${mant.notas || ''}"\n`;
-                });
-            }
+            let csv = headers.join(',') + '\n';
+            rows.forEach(row => {
+                csv += row.map(cell => `"${cell}"`).join(',') + '\n';
+            });
             
             // Descargar archivo
             const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
@@ -1447,22 +2164,64 @@ Nota: Esta función requiere configuración adicional con Google Apps Script.`);
             return date.toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric' });
         }
 
+        function formatDateTime(dateTimeString) {
+            const date = new Date(dateTimeString);
+            return date.toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+        }
+
         function getPaymentMethodName(method) {
             const methods = {
                 'efectivo': 'Efectivo',
                 'transferencia': 'Transferencia',
                 'tarjeta': 'Tarjeta',
-                'nequi': 'Nequi/Daviplata'
+                'nequi': 'Nequi',
+                'daviplata': 'Daviplata',
+                'bancolombia': 'Bancolombia',
+                'bancamia': 'Bancamía'
             };
             return methods[method] || method;
+        }
+
+        function getMaintenanceTypeShort(type) {
+            // Acortar nombres largos para la tabla
+            const shortNames = {
+                'cambio-aceite': 'Cambio Aceite',
+                'cambio-filtros': 'Cambio Filtros',
+                'alineacion-balanceo': 'Alineación/Balanceo',
+                'revision-frenos': 'Revisión Frenos',
+                'cambio-correa': 'Cambio Correa',
+                'suspension': 'Suspensión',
+                'transmision': 'Transmisión',
+                'sistema-electrico': 'Sistema Eléctrico',
+                'aire-acondicionado': 'Aire Acondicionado',
+                'cambio-bujias': 'Cambio Bujías',
+                'cambio-bateria': 'Cambio Batería',
+                'cambio-llantas': 'Cambio Llantas',
+                'rotacion-llantas': 'Rotación Llantas',
+                'cambio-liquidos': 'Cambio Líquidos',
+                'revision-motor': 'Revisión Motor',
+                'otros': 'Otros'
+            };
+            return shortNames[type] || type;
         }
 
         function getMaintenanceTypeName(type) {
             const types = {
                 'cambio-aceite': 'Cambio de Aceite',
-                'filtros': 'Cambio de Filtros',
-                'frenos': 'Revisión de Frenos',
-                'alineacion': 'Alineación y Balanceo',
+                'cambio-filtros': 'Cambio de Filtros (Aire, Combustible, Aire Acondicionado)',
+                'alineacion-balanceo': 'Alineación y Balanceo',
+                'revision-frenos': 'Revisión y Cambio de Frenos',
+                'cambio-correa': 'Cambio de Correa de Distribución',
+                'suspension': 'Revisión de Suspensión',
+                'transmision': 'Revisión de Transmisión',
+                'sistema-electrico': 'Revisión Sistema Eléctrico',
+                'aire-acondicionado': 'Revisión Aire Acondicionado',
+                'cambio-bujias': 'Cambio de Bujías',
+                'cambio-bateria': 'Cambio de Batería',
+                'cambio-llantas': 'Cambio de Llantas',
+                'rotacion-llantas': 'Rotación de Llantas',
+                'cambio-liquidos': 'Cambio de Líquidos (Frenos, Dirección, Refrigerante)',
+                'revision-motor': 'Revisión General del Motor',
                 'otros': 'Otros'
             };
             return types[type] || type;
@@ -1472,8 +2231,13 @@ Nota: Esta función requiere configuración adicional con Google Apps Script.`);
             const types = {
                 'soat': 'SOAT',
                 'tecnomecanica': 'Tecnomecánica',
-                'seguro': 'Seguro Contractual',
-                'tarjeta-operacion': 'Tarjeta de Operación'
+                'seguro-contractual': 'Seguro Contractual',
+                'seguro-extracontractual': 'Seguro Extracontractual',
+                'tarjeta-operacion': 'Tarjeta de Operación',
+                'licencia-transito': 'Licencia de Tránsito',
+                'revision-tecnomecanica': 'Revisión Tecnomecánica',
+                'impuesto-vehiculo': 'Impuesto Vehicular',
+                'otros-documentos': 'Otros Documentos'
             };
             return types[type] || type;
         }
@@ -1491,6 +2255,15 @@ Nota: Esta función requiere configuración adicional con Google Apps Script.`);
             } else {
                 return { text: 'Al día', class: 'badge-success' };
             }
+        }
+
+        function getDiasRestantes(expirationDate) {
+            const today = new Date();
+            const expiration = new Date(expirationDate);
+            const diffTime = expiration - today;
+            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+            
+            return diffDays > 0 ? `${diffDays} días` : diffDays < 0 ? `${Math.abs(diffDays)} días vencido` : 'Hoy vence';
         }
     </script>
 </body>
