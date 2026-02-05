@@ -1398,12 +1398,18 @@
                 timestamp: new Date().toISOString()
             });
             
+            // Actualizar kilometraje total del vehículo con el kilometraje final del tanqueo
+            if (kmFinal > datos.configuracion.vehiculo.kilometraje) {
+                datos.configuracion.vehiculo.kilometraje = kmFinal;
+                actualizarInterfazConfiguracion();
+            }
+            
             saveData();
             renderTanqueos();
             updateStats();
             actualizarEstadisticasTanqueo();
             
-            alert(`¡Tanqueo de ${litros} litros registrado exitosamente!`);
+            alert(`¡Tanqueo de ${litros} litros registrado exitosamente!\nKilometraje actualizado: ${kmFinal.toLocaleString()} km`);
             e.target.reset();
             const now = new Date();
             const nowDatetime = new Date(now.getTime() - now.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
