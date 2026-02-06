@@ -462,6 +462,7 @@
             display: block;
         }
         
+        /* Responsive para tablets */
         @media (max-width: 992px) {
             .main-grid {
                 grid-template-columns: 1fr;
@@ -475,25 +476,257 @@
                 flex-direction: column;
                 gap: 20px;
             }
+            
+            .container {
+                padding: 15px;
+            }
         }
         
+        /* Responsive para celulares */
         @media (max-width: 576px) {
+            .container {
+                padding: 10px;
+            }
+            
+            header {
+                border-radius: 0;
+                margin-bottom: 15px;
+                padding: 15px 0;
+            }
+            
+            .logo h1 {
+                font-size: 1.3rem;
+            }
+            
+            .logo i {
+                font-size: 1.8rem;
+            }
+            
+            .logo .sistema-titulo {
+                font-size: 0.8rem;
+            }
+            
+            .vehiculo-info {
+                min-width: auto;
+                width: 100%;
+            }
+            
+            .vehiculo-marca {
+                font-size: 1rem;
+            }
+            
+            .vehiculo-placa {
+                font-size: 0.95rem;
+                padding: 4px 12px;
+            }
+            
             .stats {
                 grid-template-columns: 1fr;
+                gap: 10px;
+            }
+            
+            .stat-card {
+                padding: 15px;
+            }
+            
+            .stat-value {
+                font-size: 1.5rem;
+            }
+            
+            .stat-label {
+                font-size: 0.85rem;
+            }
+            
+            .card {
+                padding: 15px;
+                border-radius: 8px;
+            }
+            
+            .card-title {
+                font-size: 1rem;
+            }
+            
+            .card-title i {
+                font-size: 1.1rem;
             }
             
             .section-title {
                 flex-direction: column;
                 align-items: flex-start;
+                gap: 10px;
+            }
+            
+            .section-title h2 {
+                font-size: 1.1rem;
             }
             
             .section-title .btn-group {
                 width: 100%;
+                flex-wrap: wrap;
+            }
+            
+            .section-title .btn-group .btn {
+                flex: 1;
+                min-width: 120px;
             }
             
             .vehiculo-detalles {
                 flex-direction: column;
                 gap: 5px;
+            }
+            
+            .form-group {
+                margin-bottom: 15px;
+            }
+            
+            input, select, textarea {
+                font-size: 16px; /* Evita zoom automático en iOS */
+                padding: 10px 12px;
+            }
+            
+            .btn {
+                padding: 10px 20px;
+                font-size: 0.95rem;
+                width: 100%;
+            }
+            
+            .btn-sm {
+                padding: 6px 12px;
+                font-size: 0.85rem;
+                width: auto;
+            }
+            
+            .btn-group {
+                flex-direction: column;
+                width: 100%;
+            }
+            
+            .btn-group .btn {
+                width: 100%;
+                margin-bottom: 8px;
+            }
+            
+            .table-responsive {
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+            }
+            
+            table {
+                font-size: 0.85rem;
+                min-width: 600px;
+            }
+            
+            table th,
+            table td {
+                padding: 8px 6px;
+                white-space: nowrap;
+            }
+            
+            .badge {
+                font-size: 0.7rem;
+                padding: 3px 8px;
+            }
+            
+            .tabs {
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+            }
+            
+            .tab-btn {
+                font-size: 0.85rem;
+                padding: 10px 15px;
+                white-space: nowrap;
+            }
+            
+            .modal {
+                padding: 10px;
+            }
+            
+            .modal-content {
+                width: 95%;
+                max-width: 100%;
+                margin: 20px auto;
+                padding: 20px 15px;
+                max-height: 90vh;
+                overflow-y: auto;
+            }
+            
+            .modal-header h2 {
+                font-size: 1.2rem;
+            }
+            
+            .close-btn {
+                font-size: 1.5rem;
+            }
+            
+            .save-indicator {
+                bottom: 10px;
+                right: 10px;
+                padding: 8px 15px;
+                font-size: 0.85rem;
+            }
+            
+            .config-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .calendario {
+                padding: 10px;
+            }
+            
+            .vencimiento-item {
+                padding: 10px;
+            }
+            
+            /* Ajustes para inputs de fecha en móviles */
+            input[type="date"],
+            input[type="datetime-local"],
+            input[type="number"] {
+                -webkit-appearance: none;
+                appearance: none;
+            }
+            
+            /* Mejora la legibilidad en pantallas pequeñas */
+            .stat-icon {
+                font-size: 1.5rem;
+            }
+            
+            /* Ajuste para el header en modo landscape móvil */
+            @media (max-height: 500px) and (orientation: landscape) {
+                header {
+                    padding: 10px 0;
+                }
+                
+                .logo h1 {
+                    font-size: 1.1rem;
+                }
+                
+                .vehiculo-info {
+                    padding: 10px;
+                }
+            }
+        }
+        
+        /* Responsive para pantallas muy pequeñas */
+        @media (max-width: 360px) {
+            .logo h1 {
+                font-size: 1.1rem;
+            }
+            
+            .vehiculo-placa {
+                font-size: 0.85rem;
+            }
+            
+            .stat-value {
+                font-size: 1.3rem;
+            }
+            
+            .card {
+                padding: 12px;
+            }
+            
+            table {
+                font-size: 0.75rem;
             }
         }
     </style>
