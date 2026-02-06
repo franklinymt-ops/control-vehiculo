@@ -1,4 +1,4 @@
-       <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
@@ -1603,17 +1603,35 @@
             document.getElementById('current-date').textContent = now.toLocaleDateString('es-ES', options);
         }
 
+        // Función auxiliar para obtener fecha local en formato YYYY-MM-DD
+        function getFechaLocal() {
+            const now = new Date();
+            const year = now.getFullYear();
+            const month = String(now.getMonth() + 1).padStart(2, '0');
+            const day = String(now.getDate()).padStart(2, '0');
+            return `${year}-${month}-${day}`;
+        }
+        
+        // Función auxiliar para obtener fecha y hora local en formato YYYY-MM-DDTHH:mm
+        function getFechaHoraLocal() {
+            const now = new Date();
+            const year = now.getFullYear();
+            const month = String(now.getMonth() + 1).padStart(2, '0');
+            const day = String(now.getDate()).padStart(2, '0');
+            const hours = String(now.getHours()).padStart(2, '0');
+            const minutes = String(now.getMinutes()).padStart(2, '0');
+            return `${year}-${month}-${day}T${hours}:${minutes}`;
+        }
+
         // Configurar fechas en formularios
         function configurarFechasFormularios() {
-            const now = new Date();
-            const today = now.toISOString().split('T')[0];
+            const today = getFechaLocal();
             
             // Formulario de pago - fecha de hoy
             document.getElementById('fecha-pago').value = today;
             
             // Formulario de tanqueo - fecha y hora actual
-            const nowDatetime = new Date(now.getTime() - now.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
-            document.getElementById('fecha-tanqueo').value = nowDatetime;
+            document.getElementById('fecha-tanqueo').value = getFechaHoraLocal();
             
             // Formulario de mantenimiento - fecha de hoy
             document.getElementById('fecha-mantenimiento').value = today;
@@ -1621,14 +1639,17 @@
             // Formulario de documentos - fecha de hoy para emisión, +1 año para vencimiento
             document.getElementById('fecha-emision').value = today;
             
+            const now = new Date();
             const nextYear = new Date(now);
             nextYear.setFullYear(nextYear.getFullYear() + 1);
-            document.getElementById('vencimiento').value = nextYear.toISOString().split('T')[0];
+            const nextYearStr = `${nextYear.getFullYear()}-${String(nextYear.getMonth() + 1).padStart(2, '0')}-${String(nextYear.getDate()).padStart(2, '0')}`;
+            document.getElementById('vencimiento').value = nextYearStr;
             
             // Próximo mantenimiento - +3 meses
             const nextMaintenance = new Date(now);
             nextMaintenance.setMonth(nextMaintenance.getMonth() + 3);
-            document.getElementById('proximo-mantenimiento').value = nextMaintenance.toISOString().split('T')[0];
+            const nextMaintenanceStr = `${nextMaintenance.getFullYear()}-${String(nextMaintenance.getMonth() + 1).padStart(2, '0')}-${String(nextMaintenance.getDate()).padStart(2, '0')}`;
+            document.getElementById('proximo-mantenimiento').value = nextMaintenanceStr;
         }
 
         // Cargar datos del localStorage
@@ -1776,7 +1797,7 @@
             updateStats();
             
             alert(`¡Pago de $${monto.toLocaleString()} registrado exitosamente!`);
-            document.getElementById('fecha-pago').value = new Date().toISOString().split('T')[0];
+            document.getElementById('fecha-pago').value = getFechaLocal();
             document.getElementById('nota-pago').value = "";
         }
 
@@ -1819,9 +1840,7 @@
             
             alert(`¡Tanqueo de ${litros} litros registrado exitosamente!\nKilometraje actualizado: ${kmFinal.toLocaleString()} km`);
             e.target.reset();
-            const now = new Date();
-            const nowDatetime = new Date(now.getTime() - now.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
-            document.getElementById('fecha-tanqueo').value = nowDatetime;
+            document.getElementById('fecha-tanqueo').value = getFechaHoraLocal();
         }
 
         function registrarMantenimiento(e) {
