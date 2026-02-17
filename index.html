@@ -2733,15 +2733,30 @@
             alert('Archivo CSV exportado exitosamente! Puedes abrirlo en Excel.');
         }
 
-        // FUNCIONES AUXILIARES
+        // FUNCIONES AUXILIARES - CORREGIDAS PARA MANEJAR FECHAS CORRECTAMENTE
         function formatDate(dateString) {
-            const date = new Date(dateString);
+            // Dividimos la fecha YYYY-MM-DD y creamos una fecha en la zona horaria local
+            const [year, month, day] = dateString.split('-').map(Number);
+            // Creamos la fecha usando los componentes locales para evitar el desplazamiento UTC
+            const date = new Date(year, month - 1, day);
             return date.toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric' });
         }
 
         function formatDateTime(dateTimeString) {
-            const date = new Date(dateTimeString);
-            return date.toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+            // Para datetime-local el formato es YYYY-MM-DDTHH:mm
+            const [datePart, timePart] = dateTimeString.split('T');
+            const [year, month, day] = datePart.split('-').map(Number);
+            const [hours, minutes] = timePart.split(':').map(Number);
+            
+            // Creamos la fecha con componentes locales
+            const date = new Date(year, month - 1, day, hours, minutes);
+            return date.toLocaleDateString('es-ES', { 
+                day: '2-digit', 
+                month: '2-digit', 
+                year: 'numeric', 
+                hour: '2-digit', 
+                minute: '2-digit' 
+            });
         }
 
         function getPaymentMethodName(method) {
@@ -2819,7 +2834,11 @@
 
         function getDocumentStatus(expirationDate) {
             const today = new Date();
-            const expiration = new Date(expirationDate);
+            today.setHours(0, 0, 0, 0);
+            
+            const [year, month, day] = expirationDate.split('-').map(Number);
+            const expiration = new Date(year, month - 1, day);
+            
             const diffTime = expiration - today;
             const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
             
@@ -2834,7 +2853,11 @@
 
         function getDiasRestantes(expirationDate) {
             const today = new Date();
-            const expiration = new Date(expirationDate);
+            today.setHours(0, 0, 0, 0);
+            
+            const [year, month, day] = expirationDate.split('-').map(Number);
+            const expiration = new Date(year, month - 1, day);
+            
             const diffTime = expiration - today;
             const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
             
