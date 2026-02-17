@@ -965,8 +965,18 @@
                     </div>
                     
                     <div class="form-group">
+                        <label for="capital-abonado">Capital Abonado</label>
+                        <input type="number" id="capital-abonado" value="0" min="0" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="base-mantenimiento">Base Mantenimiento</label>
+                        <input type="number" id="base-mantenimiento" value="0" min="0" required>
+                    </div>
+                    
+                    <div class="form-group">
                         <label for="monto-pago">Monto a Pagar (Valor diario: <span id="monto-diario-display">$85,000</span>)</label>
-                        <input type="number" id="monto-pago" value="85000" min="0" required>
+                        <input type="number" id="monto-pago" value="85000" min="0" readonly class="form-control" style="background-color: #f0f0f0;">
                     </div>
                     
                     <div class="form-group">
@@ -1055,7 +1065,9 @@
                 <thead>
                     <tr>
                         <th>Fecha</th>
-                        <th>Monto</th>
+                        <th>Capital Abonado</th>
+                        <th>Base Mantenimiento</th>
+                        <th>Monto Total</th>
                         <th>Método</th>
                         <th>Nota</th>
                         <th>Estado</th>
@@ -1354,7 +1366,7 @@
                     <div class="card">
                         <h3 class="config-title"><i class="fas fa-money-bill-wave"></i> Configuración de Pagos</h3>
                         <div class="form-group">
-                            <label for="config-monto-diario">Monto de Pago Diario</label>
+                            <label for="config-monto-diario">Monto de Pago Diario (Base)</label>
                             <input type="number" id="config-monto-diario" value="85000" class="form-control">
                         </div>
                         <div class="form-group">
@@ -1589,6 +1601,10 @@
             // Configurar fecha actual en formularios
             configurarFechasFormularios();
             
+            // Eventos para calcular el monto total del pago
+            document.getElementById('capital-abonado').addEventListener('input', calcularMontoTotalPago);
+            document.getElementById('base-mantenimiento').addEventListener('input', calcularMontoTotalPago);
+            
             // Inicializar pestañas
             mostrarTabConfig('config-vehiculo');
             
@@ -1650,6 +1666,14 @@
             nextMaintenance.setMonth(nextMaintenance.getMonth() + 3);
             const nextMaintenanceStr = `${nextMaintenance.getFullYear()}-${String(nextMaintenance.getMonth() + 1).padStart(2, '0')}-${String(nextMaintenance.getDate()).padStart(2, '0')}`;
             document.getElementById('proximo-mantenimiento').value = nextMaintenanceStr;
+        }
+
+        // Calcular el monto total a pagar (Capital + Mantenimiento)
+        function calcularMontoTotalPago() {
+            const capital = parseFloat(document.getElementById('capital-abonado').value) || 0;
+            const mantenimiento = parseFloat(document.getElementById('base-mantenimiento').value) || 0;
+            const total = capital + mantenimiento;
+            document.getElementById('monto-pago').value = total;
         }
 
         // Cargar datos del localStorage
@@ -1751,7 +1775,6 @@
             
             // Monto diario
             document.getElementById('monto-diario-display').textContent = "$" + datos.configuracion.sistema.montoDiario.toLocaleString();
-            document.getElementById('monto-pago').value = datos.configuracion.sistema.montoDiario;
             
             // Formularios de configuración
             document.getElementById('config-marca').value = datos.configuracion.vehiculo.marca;
@@ -1779,12 +1802,16 @@
             e.preventDefault();
             
             const fecha = document.getElementById('fecha-pago').value;
-            const monto = parseInt(document.getElementById('monto-pago').value);
+            const capital = parseFloat(document.getElementById('capital-abonado').value) || 0;
+            const baseMantenimiento = parseFloat(document.getElementById('base-mantenimiento').value) || 0;
+            const monto = capital + baseMantenimiento;
             const metodo = document.getElementById('metodo-pago').value;
             const nota = document.getElementById('nota-pago').value;
             
             datos.pagos.push({
                 fecha,
+                capital,
+                baseMantenimiento,
                 monto,
                 metodo,
                 nota,
@@ -1797,8 +1824,13 @@
             updateStats();
             
             alert(`¡Pago de $${monto.toLocaleString()} registrado exitosamente!`);
-            document.getElementById('fecha-pago').value = getFechaLocal();
+            
+            // Resetear el formulario pero mantener la fecha actual
+            document.getElementById('capital-abonado').value = 0;
+            document.getElementById('base-mantenimiento').value = 0;
             document.getElementById('nota-pago').value = "";
+            document.getElementById('fecha-pago').value = getFechaLocal();
+            calcularMontoTotalPago(); // Actualiza el monto a 0
         }
 
         function registrarTanqueo(e) {
@@ -1938,8 +1970,12 @@
                             <input type="date" id="edit-fecha" value="${registro.fecha}" required>
                         </div>
                         <div class="form-group">
-                            <label for="edit-monto">Monto</label>
-                            <input type="number" id="edit-monto" value="${registro.monto}" required>
+                            <label for="edit-capital">Capital Abonado</label>
+                            <input type="number" id="edit-capital" value="${registro.capital || 0}" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="edit-base-mantenimiento">Base Mantenimiento</label>
+                            <input type="number" id="edit-base-mantenimiento" value="${registro.baseMantenimiento || 0}" required>
                         </div>
                         <div class="form-group">
                             <label for="edit-metodo">Método de Pago</label>
@@ -2130,7 +2166,9 @@
                     case 'pago':
                         registro = datos.pagos[editando.indice];
                         registro.fecha = document.getElementById('edit-fecha').value;
-                        registro.monto = parseInt(document.getElementById('edit-monto').value);
+                        registro.capital = parseFloat(document.getElementById('edit-capital').value) || 0;
+                        registro.baseMantenimiento = parseFloat(document.getElementById('edit-base-mantenimiento').value) || 0;
+                        registro.monto = registro.capital + registro.baseMantenimiento;
                         registro.metodo = document.getElementById('edit-metodo').value;
                         registro.nota = document.getElementById('edit-nota').value;
                         break;
@@ -2220,7 +2258,9 @@
                 
                 row.innerHTML = `
                     <td>${formatDate(pago.fecha)}</td>
-                    <td>$${pago.monto.toLocaleString()}</td>
+                    <td>$${(pago.capital || 0).toLocaleString()}</td>
+                    <td>$${(pago.baseMantenimiento || 0).toLocaleString()}</td>
+                    <td>$${(pago.monto || 0).toLocaleString()}</td>
                     <td>${getPaymentMethodName(pago.metodo)}</td>
                     <td>${pago.nota || '-'}</td>
                     <td><span class="badge badge-success">${pago.estado}</span></td>
@@ -2346,7 +2386,7 @@
         // ACTUALIZAR ESTADÍSTICAS
         function updateStats() {
             // Total pagado
-            const totalPagado = datos.pagos.reduce((sum, pago) => sum + pago.monto, 0);
+            const totalPagado = datos.pagos.reduce((sum, pago) => sum + (pago.monto || 0), 0);
             document.getElementById('total-pagado').textContent = `$${totalPagado.toLocaleString()}`;
             
             // Total tanqueo (litros)
@@ -2652,9 +2692,9 @@
                 case 'pagos':
                     datosExportar = datos.pagos;
                     nombreArchivo = `pagos-${datos.configuracion.vehiculo.placa}`;
-                    headers = ['Fecha', 'Monto', 'Método', 'Nota', 'Estado'];
+                    headers = ['Fecha', 'Capital Abonado', 'Base Mantenimiento', 'Monto Total', 'Método', 'Nota', 'Estado'];
                     datosExportar.forEach(pago => {
-                        rows.push([pago.fecha, pago.monto, pago.metodo, pago.nota || '', pago.estado]);
+                        rows.push([pago.fecha, pago.capital || 0, pago.baseMantenimiento || 0, pago.monto, pago.metodo, pago.nota || '', pago.estado]);
                     });
                     break;
                     
