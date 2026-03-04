@@ -2,10 +2,70 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sistema de Control Vehículo GEY253</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>Control GEY253</title>
+
+    <!-- PWA: instalable en Android e iOS -->
+    <meta name="application-name" content="Control GEY253">
+    <meta name="description" content="Sistema de control de pagos, gasolina y mantenimiento del vehículo GEY253">
+
+    <!-- Android / Chrome -->
+    <meta name="theme-color" content="#2c3e50">
+    <meta name="mobile-web-app-capable" content="yes">
+    <link rel="manifest" id="pwa-manifest">
+
+    <!-- iOS / Safari -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="GEY253">
+
+    <!-- Ícono generado por canvas (sin archivo externo) -->
+    <link rel="apple-touch-icon" id="pwa-icon-apple">
+    <link rel="icon" id="pwa-icon-favicon">
+
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
+        /* ── PWA: safe-area para iPhone con notch ── */
+        body {
+            padding-top: env(safe-area-inset-top);
+            padding-bottom: env(safe-area-inset-bottom);
+            padding-left: env(safe-area-inset-left);
+            padding-right: env(safe-area-inset-right);
+        }
+
+        /* ── Banner de instalación ── */
+        #pwa-banner {
+            display: none;
+            position: fixed;
+            bottom: 0; left: 0; right: 0;
+            background: linear-gradient(135deg, #2c3e50, #3498db);
+            color: white;
+            padding: 14px 18px;
+            z-index: 9999;
+            box-shadow: 0 -4px 20px rgba(0,0,0,0.25);
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+        #pwa-banner.show { display: flex; }
+        #pwa-banner .banner-icon { font-size: 1.8rem; flex-shrink: 0; }
+        #pwa-banner .banner-texto { flex: 1; min-width: 160px; }
+        #pwa-banner .banner-texto strong { display: block; font-size: 0.95rem; }
+        #pwa-banner .banner-texto small { font-size: 0.78rem; opacity: 0.85; }
+        #pwa-banner .banner-btns { display: flex; gap: 8px; flex-shrink: 0; }
+        #pwa-banner .btn-instalar {
+            background: white; color: #2c3e50;
+            border: none; padding: 8px 16px;
+            border-radius: 20px; font-weight: 700;
+            cursor: pointer; font-size: 0.85rem;
+        }
+        #pwa-banner .btn-cerrar-banner {
+            background: rgba(255,255,255,0.2);
+            color: white; border: none;
+            padding: 8px 12px; border-radius: 20px;
+            cursor: pointer; font-size: 0.85rem;
+        }
+
         :root {
             --primary: #2c3e50;
             --secondary: #3498db;
@@ -371,6 +431,125 @@
         
         .pago-diario {
             background-color: #e8f4fc;
+        }
+
+        /* ── DASHBOARD MENSUAL ── */
+        .dashboard-mensual {
+            background: white;
+            border-radius: 10px;
+            padding: 25px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+            margin-bottom: 30px;
+        }
+        .dashboard-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        .dashboard-header h2 {
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin: 0;
+        }
+        .mes-selector select {
+            width: auto;
+            padding: 8px 12px;
+            border-radius: 6px;
+            border: 1px solid #ddd;
+            font-size: 0.95rem;
+        }
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        .dash-card {
+            border-radius: 8px;
+            padding: 18px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+        .dash-card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0;
+            width: 4px;
+            height: 100%;
+        }
+        .dash-card.pagos    { background: #e8f4fc; } .dash-card.pagos::before    { background: var(--secondary); }
+        .dash-card.gasolina { background: #fff8e1; } .dash-card.gasolina::before { background: var(--warning); }
+        .dash-card.manten   { background: #f0faf4; } .dash-card.manten::before   { background: var(--success); }
+        .dash-card i { font-size: 1.5rem; margin-bottom: 8px; display: block; }
+        .dash-card.pagos i    { color: var(--secondary); }
+        .dash-card.gasolina i { color: var(--warning); }
+        .dash-card.manten i   { color: var(--success); }
+        .dash-valor { font-size: 1.4rem; font-weight: bold; color: var(--primary); }
+        .dash-label { font-size: 0.8rem; color: var(--gray); margin-top: 4px; }
+        .dash-sub   { font-size: 0.75rem; color: var(--gray); margin-top: 2px; }
+        .dashboard-barra {
+            background: #f5f7fa;
+            border-radius: 8px;
+            padding: 15px 20px;
+        }
+        .barra-titulo {
+            font-size: 0.85rem;
+            color: var(--gray);
+            margin-bottom: 10px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .barra-wrap {
+            display: flex;
+            gap: 6px;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+        .barra-etiqueta { width: 80px; font-size: 0.78rem; color: var(--dark); flex-shrink: 0; }
+        .barra-fondo { flex: 1; background: #ddd; border-radius: 20px; height: 10px; overflow: hidden; }
+        .barra-fill { height: 100%; border-radius: 20px; transition: width 0.6s ease; }
+        .barra-fill.pagos    { background: var(--secondary); }
+        .barra-fill.gasolina { background: var(--warning); }
+        .barra-fill.manten   { background: var(--success); }
+        .barra-monto { width: 90px; font-size: 0.78rem; font-weight: 600; color: var(--primary); text-align: right; flex-shrink: 0; }
+        .sin-datos-mes { text-align: center; padding: 30px; color: var(--gray); font-size: 0.95rem; }
+
+        /* ── FILTROS DE PAGOS ── */
+        .filtros-pagos {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            align-items: flex-end;
+            margin-bottom: 18px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+        .filtros-pagos .filtro-grupo {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            flex: 1;
+            min-width: 130px;
+        }
+        .filtros-pagos label { font-size: 0.78rem; color: var(--gray); font-weight: 600; margin: 0; }
+        .filtros-pagos select, .filtros-pagos input { padding: 8px 10px; font-size: 0.9rem; border-radius: 6px; border: 1px solid #ddd; }
+        .filtro-resultado { font-size: 0.82rem; color: var(--gray); margin-bottom: 10px; padding: 0 4px; }
+        .filtro-resultado span { font-weight: 700; color: var(--secondary); }
+
+        @media (max-width: 768px) { .dashboard-grid { grid-template-columns: 1fr 1fr; } }
+        @media (max-width: 576px) {
+            .dashboard-grid { grid-template-columns: 1fr; }
+            .dashboard-header { flex-direction: column; align-items: flex-start; }
+            .filtros-pagos { flex-direction: column; }
+            .filtros-pagos .filtro-grupo { min-width: 100%; }
         }
         
         .modal {
@@ -955,6 +1134,19 @@
             </div>
         </div>
         
+        <!-- ── DASHBOARD MENSUAL ── -->
+        <div class="dashboard-mensual">
+            <div class="dashboard-header">
+                <h2><i class="fas fa-chart-bar"></i> Resumen Mensual</h2>
+                <div class="mes-selector">
+                    <select id="dash-mes" onchange="renderDashboardMensual()"></select>
+                </div>
+            </div>
+            <div id="dash-contenido">
+                <div class="sin-datos-mes"><i class="fas fa-inbox" style="font-size:2rem;display:block;margin-bottom:8px;"></i>Sin datos para este mes</div>
+            </div>
+        </div>
+
         <div class="main-grid">
             <div class="card pago-diario">
                 <h2 class="card-title"><i class="fas fa-calendar-day"></i> Pago Diario del Vehículo</h2>
@@ -1071,6 +1263,43 @@
                     </button>
                 </div>
             </div>
+            <!-- Filtros de pagos -->
+            <div class="filtros-pagos">
+                <div class="filtro-grupo">
+                    <label>Mes</label>
+                    <select id="filtro-pago-mes" onchange="filtrarPagos()">
+                        <option value="todos">Todos los meses</option>
+                        <option value="1">Enero</option><option value="2">Febrero</option><option value="3">Marzo</option>
+                        <option value="4">Abril</option><option value="5">Mayo</option><option value="6">Junio</option>
+                        <option value="7">Julio</option><option value="8">Agosto</option><option value="9">Septiembre</option>
+                        <option value="10">Octubre</option><option value="11">Noviembre</option><option value="12">Diciembre</option>
+                    </select>
+                </div>
+                <div class="filtro-grupo">
+                    <label>Año</label>
+                    <select id="filtro-pago-anio" onchange="filtrarPagos()"></select>
+                </div>
+                <div class="filtro-grupo">
+                    <label>Método de Pago</label>
+                    <select id="filtro-pago-metodo" onchange="filtrarPagos()">
+                        <option value="todos">Todos</option>
+                        <option value="efectivo">Efectivo</option>
+                        <option value="transferencia">Transferencia</option>
+                        <option value="tarjeta">Tarjeta</option>
+                        <option value="nequi">Nequi/Daviplata</option>
+                        <option value="bancolombia">Bancolombia</option>
+                        <option value="bancamia">Bancamía</option>
+                    </select>
+                </div>
+                <div class="filtro-grupo">
+                    <label>Buscar nota</label>
+                    <input type="text" id="filtro-pago-nota" placeholder="Ej: adelantado..." oninput="filtrarPagos()">
+                </div>
+                <div class="filtro-grupo" style="justify-content:flex-end;">
+                    <button class="btn btn-sm" style="background:#95a5a6;" onclick="limpiarFiltrosPagos()"><i class="fas fa-times"></i> Limpiar</button>
+                </div>
+            </div>
+            <div class="filtro-resultado" id="filtro-resultado-pagos"></div>
             <table id="pagos-table">
                 <thead>
                     <tr>
@@ -1720,7 +1949,10 @@
             }
             
             // Renderizar todos los datos cargados
-            renderPagos();
+            poblarSelectorMes();
+            poblarAniosFiltro();
+            renderDashboardMensual();
+            filtrarPagos();
             renderTanqueos();
             renderMantenimientos();
             renderVencimientos();
@@ -1830,7 +2062,9 @@
             });
             
             saveData();
-            renderPagos();
+            poblarAniosFiltro();
+            filtrarPagos();
+            renderDashboardMensual();
             updateStats();
             
             alert(`¡Pago de $${monto.toLocaleString()} registrado exitosamente!`);
@@ -2166,7 +2400,10 @@
                 switch(tipo) {
                     case 'pago':
                         datos.pagos.splice(index, 1);
-                        renderPagos();
+                        poblarAniosFiltro();
+                        filtrarPagos();
+                        renderDashboardMensual();
+                        updateStats();
                         break;
                     case 'mantenimiento':
                         datos.mantenimientos.splice(index, 1);
@@ -2252,7 +2489,9 @@
                 
                 switch(editando.tipo) {
                     case 'pago':
-                        renderPagos();
+                        poblarAniosFiltro();
+                        filtrarPagos();
+                        renderDashboardMensual();
                         updateStats();
                         break;
                     case 'mantenimiento':
@@ -2431,6 +2670,186 @@
                 
                 tbody.appendChild(row);
             });
+        }
+
+
+        // ── DASHBOARD MENSUAL ──
+        function poblarSelectorMes() {
+            const sel = document.getElementById('dash-mes');
+            if (!sel) return;
+            const hoy = new Date();
+            const meses = ['Enero','Febrero','Marzo','Abril','Mayo','Junio',
+                           'Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+            sel.innerHTML = '';
+            // Últimos 12 meses
+            for (let i = 0; i < 12; i++) {
+                const d = new Date(hoy.getFullYear(), hoy.getMonth() - i, 1);
+                const val = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
+                const opt = document.createElement('option');
+                opt.value = val;
+                opt.textContent = `${meses[d.getMonth()]} ${d.getFullYear()}`;
+                if (i === 0) opt.selected = true;
+                sel.appendChild(opt);
+            }
+        }
+
+        function renderDashboardMensual() {
+            const sel = document.getElementById('dash-mes');
+            if (!sel) return;
+            const [anio, mes] = sel.value.split('-').map(Number);
+            const contenido = document.getElementById('dash-contenido');
+
+            // Filtrar datos del mes
+            const pagosMes = datos.pagos.filter(p => {
+                const [y,m] = p.fecha.split('-').map(Number);
+                return y === anio && m === mes;
+            });
+            const tanqueosMes = datos.tanqueos.filter(t => {
+                const [y,m] = t.fecha.split('T')[0].split('-').map(Number);
+                return y === anio && m === mes;
+            });
+            const mantenMes = datos.mantenimientos.filter(m => {
+                const [y,mo] = m.fecha.split('-').map(Number);
+                return y === anio && mo === mes;
+            });
+
+            const totalPagos   = pagosMes.reduce((s,p) => s + (p.monto||0), 0);
+            const totalGasolin = tanqueosMes.reduce((s,t) => s + (t.valor||0), 0);
+            const totalManten  = mantenMes.reduce((s,m) => s + (m.costo||0), 0);
+            const totalLitros  = tanqueosMes.reduce((s,t) => s + (t.litros||0), 0);
+            const totalGeneral = totalPagos + totalGasolin + totalManten;
+
+            if (totalGeneral === 0 && pagosMes.length === 0 && tanqueosMes.length === 0 && mantenMes.length === 0) {
+                contenido.innerHTML = '<div class="sin-datos-mes"><i class="fas fa-inbox" style="font-size:2rem;display:block;margin-bottom:8px;"></i>Sin datos registrados para este mes</div>';
+                return;
+            }
+
+            // Barras proporcionales
+            const maxVal = Math.max(totalPagos, totalGasolin, totalManten, 1);
+            const pct = v => Math.round((v / maxVal) * 100);
+
+            contenido.innerHTML = `
+                <div class="dashboard-grid">
+                    <div class="dash-card pagos">
+                        <i class="fas fa-money-bill-wave"></i>
+                        <div class="dash-valor">$${totalPagos.toLocaleString()}</div>
+                        <div class="dash-label">Pagos del mes</div>
+                        <div class="dash-sub">${pagosMes.length} registro${pagosMes.length!==1?'s':''}</div>
+                    </div>
+                    <div class="dash-card gasolina">
+                        <i class="fas fa-gas-pump"></i>
+                        <div class="dash-valor">$${totalGasolin.toLocaleString()}</div>
+                        <div class="dash-label">Gasto en gasolina</div>
+                        <div class="dash-sub">${totalLitros.toFixed(1)} L · ${tanqueosMes.length} tanqueo${tanqueosMes.length!==1?'s':''}</div>
+                    </div>
+                    <div class="dash-card manten">
+                        <i class="fas fa-tools"></i>
+                        <div class="dash-valor">$${totalManten.toLocaleString()}</div>
+                        <div class="dash-label">Mantenimientos</div>
+                        <div class="dash-sub">${mantenMes.length} registro${mantenMes.length!==1?'s':''}</div>
+                    </div>
+                </div>
+                <div class="dashboard-barra">
+                    <div class="barra-titulo">Distribución del gasto mensual · Total: $${totalGeneral.toLocaleString()}</div>
+                    <div class="barra-wrap">
+                        <div class="barra-etiqueta">Pagos</div>
+                        <div class="barra-fondo"><div class="barra-fill pagos" style="width:${pct(totalPagos)}%"></div></div>
+                        <div class="barra-monto">$${totalPagos.toLocaleString()}</div>
+                    </div>
+                    <div class="barra-wrap">
+                        <div class="barra-etiqueta">Gasolina</div>
+                        <div class="barra-fondo"><div class="barra-fill gasolina" style="width:${pct(totalGasolin)}%"></div></div>
+                        <div class="barra-monto">$${totalGasolin.toLocaleString()}</div>
+                    </div>
+                    <div class="barra-wrap">
+                        <div class="barra-etiqueta">Manten.</div>
+                        <div class="barra-fondo"><div class="barra-fill manten" style="width:${pct(totalManten)}%"></div></div>
+                        <div class="barra-monto">$${totalManten.toLocaleString()}</div>
+                    </div>
+                </div>
+            `;
+        }
+
+        // ── FILTROS HISTORIAL DE PAGOS ──
+        function poblarAniosFiltro() {
+            const sel = document.getElementById('filtro-pago-anio');
+            if (!sel) return;
+            const anios = [...new Set(datos.pagos.map(p => p.fecha.split('-')[0]))].sort((a,b) => b-a);
+            sel.innerHTML = '<option value="todos">Todos los años</option>';
+            anios.forEach(a => {
+                const opt = document.createElement('option');
+                opt.value = a; opt.textContent = a;
+                sel.appendChild(opt);
+            });
+        }
+
+        function filtrarPagos() {
+            const mes    = document.getElementById('filtro-pago-mes').value;
+            const anio   = document.getElementById('filtro-pago-anio').value;
+            const metodo = document.getElementById('filtro-pago-metodo').value;
+            const nota   = document.getElementById('filtro-pago-nota').value.toLowerCase().trim();
+
+            let filtrados = [...datos.pagos];
+
+            if (mes !== 'todos')    filtrados = filtrados.filter(p => parseInt(p.fecha.split('-')[1]) === parseInt(mes));
+            if (anio !== 'todos')   filtrados = filtrados.filter(p => p.fecha.split('-')[0] === anio);
+            if (metodo !== 'todos') filtrados = filtrados.filter(p => p.metodo === metodo);
+            if (nota)               filtrados = filtrados.filter(p => (p.nota||'').toLowerCase().includes(nota));
+
+            filtrados.sort((a,b) => new Date(b.fecha) - new Date(a.fecha));
+
+            const tbody = document.getElementById('pagos-body');
+            tbody.innerHTML = '';
+
+            const res = document.getElementById('filtro-resultado-pagos');
+            const hayFiltro = mes!=='todos' || anio!=='todos' || metodo!=='todos' || nota;
+            res.innerHTML = hayFiltro
+                ? `Mostrando <span>${filtrados.length}</span> de ${datos.pagos.length} registros`
+                : '';
+
+            filtrados.forEach((pago, index) => {
+                const realIndex = datos.pagos.indexOf(pago);
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${formatDate(pago.fecha)}</td>
+                    <td>$${(pago.capital||0).toLocaleString()}</td>
+                    <td>$${(pago.baseMantenimiento||0).toLocaleString()}</td>
+                    <td>$${(pago.monto||0).toLocaleString()}</td>
+                    <td>${getPaymentMethodName(pago.metodo)}</td>
+                    <td>${pago.nota||'-'}</td>
+                    <td><span class="badge badge-success">${pago.estado}</span></td>
+                    <td>
+                        <div class="btn-group">
+                            <button class="btn btn-warning btn-sm" onclick="editarRegistro('pago', ${realIndex})"><i class="fas fa-edit"></i></button>
+                            <button class="btn btn-danger btn-sm" onclick="eliminarRegistro('pago', ${realIndex})"><i class="fas fa-trash"></i></button>
+                        </div>
+                    </td>`;
+                tbody.appendChild(row);
+            });
+
+            // Totales de la vista filtrada
+            if (filtrados.length > 0) {
+                const tCap  = filtrados.reduce((s,p) => s+(p.capital||0), 0);
+                const tBase = filtrados.reduce((s,p) => s+(p.baseMantenimiento||0), 0);
+                const tMon  = filtrados.reduce((s,p) => s+(p.monto||0), 0);
+                const rowT = document.createElement('tr');
+                rowT.style.cssText = 'background-color:#2c3e50;color:white;font-weight:bold;';
+                rowT.innerHTML = `
+                    <td>TOTALES${hayFiltro?' (filtrado)':''}</td>
+                    <td>$${tCap.toLocaleString()}</td>
+                    <td>$${tBase.toLocaleString()}</td>
+                    <td>$${tMon.toLocaleString()}</td>
+                    <td colspan="4"></td>`;
+                tbody.appendChild(rowT);
+            }
+        }
+
+        function limpiarFiltrosPagos() {
+            document.getElementById('filtro-pago-mes').value    = 'todos';
+            document.getElementById('filtro-pago-anio').value   = 'todos';
+            document.getElementById('filtro-pago-metodo').value = 'todos';
+            document.getElementById('filtro-pago-nota').value   = '';
+            filtrarPagos();
         }
 
         // ACTUALIZAR ESTADÍSTICAS
@@ -2913,6 +3332,142 @@
             
             return diffDays > 0 ? `${diffDays} días` : diffDays < 0 ? `${Math.abs(diffDays)} días vencido` : 'Hoy vence';
         }
+    </script>
+    <!-- ── Banner instalación PWA ── -->
+    <div id="pwa-banner">
+        <div class="banner-icon">📱</div>
+        <div class="banner-texto">
+            <strong>Instalar app en tu celular</strong>
+            <small id="pwa-banner-instruccion">Agrega esta app a tu pantalla de inicio</small>
+        </div>
+        <div class="banner-btns">
+            <button class="btn-instalar" id="pwa-btn-instalar" onclick="instalarPWA()">Instalar</button>
+            <button class="btn-cerrar-banner" onclick="cerrarBannerPWA()">✕</button>
+        </div>
+    </div>
+
+    <script>
+        // ── SERVICE WORKER ──
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                const swCode = `
+const CACHE = 'gey253-v1';
+const ASSETS = [location.href];
+self.addEventListener('install', e => {
+    e.waitUntil(caches.open(CACHE).then(c => c.addAll(ASSETS)));
+});
+self.addEventListener('fetch', e => {
+    e.respondWith(
+        caches.match(e.request).then(r => r || fetch(e.request).catch(() => caches.match(e.request)))
+    );
+});
+                `;
+                const blob = new Blob([swCode], { type: 'application/javascript' });
+                const swUrl = URL.createObjectURL(blob);
+                navigator.serviceWorker.register(swUrl).catch(() => {});
+            });
+        }
+
+        // ── ÍCONO PWA generado con Canvas ──
+        function generarIconoPWA() {
+            const canvas = document.createElement('canvas');
+            canvas.width = 192; canvas.height = 192;
+            const ctx = canvas.getContext('2d');
+            // Fondo degradado
+            const grad = ctx.createLinearGradient(0, 0, 192, 192);
+            grad.addColorStop(0, '#2c3e50');
+            grad.addColorStop(1, '#3498db');
+            ctx.fillStyle = grad;
+            ctx.beginPath();
+            ctx.roundRect(0, 0, 192, 192, 32);
+            ctx.fill();
+            // Auto (emoji simplificado con texto)
+            ctx.fillStyle = 'white';
+            ctx.font = 'bold 80px serif';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText('🚗', 96, 85);
+            ctx.font = 'bold 22px Arial';
+            ctx.fillText('GEY253', 96, 155);
+            return canvas.toDataURL('image/png');
+        }
+
+        // ── MANIFEST dinámico ──
+        function crearManifest(iconoUrl) {
+            const manifest = {
+                name: 'Control Vehicular GEY253',
+                short_name: 'GEY253',
+                description: 'Control de pagos, gasolina y mantenimiento',
+                start_url: location.href,
+                display: 'standalone',
+                orientation: 'portrait',
+                background_color: '#2c3e50',
+                theme_color: '#2c3e50',
+                icons: [
+                    { src: iconoUrl, sizes: '192x192', type: 'image/png', purpose: 'any maskable' },
+                    { src: iconoUrl, sizes: '512x512', type: 'image/png', purpose: 'any maskable' }
+                ]
+            };
+            const blob = new Blob([JSON.stringify(manifest)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            document.getElementById('pwa-manifest').setAttribute('href', url);
+            document.getElementById('pwa-icon-apple').setAttribute('href', iconoUrl);
+            document.getElementById('pwa-icon-favicon').setAttribute('href', iconoUrl);
+        }
+
+        // ── LÓGICA DE INSTALACIÓN ──
+        let deferredPrompt = null;
+        const esIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
+        const esAndroid = /android/i.test(navigator.userAgent);
+        const yaInstalado = window.matchMedia('(display-mode: standalone)').matches
+                         || window.navigator.standalone === true;
+
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+            if (!yaInstalado && !localStorage.getItem('pwa-banner-cerrado')) {
+                mostrarBannerAndroid();
+            }
+        });
+
+        function mostrarBannerAndroid() {
+            document.getElementById('pwa-banner-instruccion').textContent =
+                'Instala la app para acceder sin internet';
+            document.getElementById('pwa-btn-instalar').style.display = 'block';
+            document.getElementById('pwa-banner').classList.add('show');
+        }
+
+        function mostrarBannerIOS() {
+            if (yaInstalado || localStorage.getItem('pwa-banner-cerrado')) return;
+            document.getElementById('pwa-banner-instruccion').innerHTML =
+                'Toca <strong>Compartir</strong> → <strong>"Añadir a inicio"</strong> en Safari';
+            document.getElementById('pwa-btn-instalar').style.display = 'none';
+            document.getElementById('pwa-banner').classList.add('show');
+        }
+
+        function instalarPWA() {
+            if (!deferredPrompt) return;
+            deferredPrompt.prompt();
+            deferredPrompt.userChoice.then(r => {
+                deferredPrompt = null;
+                cerrarBannerPWA();
+            });
+        }
+
+        function cerrarBannerPWA() {
+            document.getElementById('pwa-banner').classList.remove('show');
+            localStorage.setItem('pwa-banner-cerrado', '1');
+        }
+
+        // Inicializar PWA al cargar
+        window.addEventListener('DOMContentLoaded', () => {
+            const icono = generarIconoPWA();
+            crearManifest(icono);
+            // En iOS mostrar banner manual (no hay beforeinstallprompt)
+            if (esIOS && !yaInstalado) {
+                setTimeout(mostrarBannerIOS, 2500);
+            }
+        });
     </script>
 </body>
 </html>
