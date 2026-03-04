@@ -1018,12 +1018,17 @@
 
                     <div class="form-group">
                         <label for="litros">Litros de Gasolina</label>
-                        <input type="number" id="litros" step="0.1" min="0" required>
+                        <input type="number" id="litros" step="0.1" min="0" required oninput="calcularValorTanqueo()">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="precio-galon">Precio por Galón <small style="color:#3498db;">(calcula Valor Total automáticamente)</small></label>
+                        <input type="number" id="precio-galon" min="0" placeholder="Ej: 12000" oninput="calcularValorTanqueo()">
                     </div>
                     
                     <div class="form-group">
                         <label for="valor-tanqueo">Valor Total</label>
-                        <input type="number" id="valor-tanqueo" min="0" required>
+                        <input type="number" id="valor-tanqueo" min="0" required placeholder="Se calcula solo o ingresa manualmente" style="background-color:#f0f8ff;">
                     </div>
                     
                     <div class="form-group">
@@ -1845,6 +1850,18 @@
                 litrosInput.value = (galones * 3.78541).toFixed(2);
             } else {
                 litrosInput.value = '';
+            }
+            calcularValorTanqueo();
+        }
+
+        function calcularValorTanqueo() {
+            const litros = parseFloat(document.getElementById('litros').value);
+            const precioGalon = parseFloat(document.getElementById('precio-galon').value);
+            const valorInput = document.getElementById('valor-tanqueo');
+            if (!isNaN(litros) && litros > 0 && !isNaN(precioGalon) && precioGalon > 0) {
+                // precio por galón → precio por litro = precioGalon / 3.78541
+                const precioPorLitro = precioGalon / 3.78541;
+                valorInput.value = Math.round(litros * precioPorLitro);
             }
         }
 
